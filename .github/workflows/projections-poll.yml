@@ -1,0 +1,163 @@
+name: projections-poll-and-predict
+
+on:
+  schedule:
+    # Every 30 minutes
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+env:
+  TZ: Australia/Melbourne
+
+jobs:
+  poll-and-predict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GP_Refactor
+        uses: actions/checkout@v4
+        with:
+          ref: GP_Refactor
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Compute Melbourne-time window and PREDICT_DATE
+        id: when
+        run: |
+          HOUR=$(TZ=$TZ date +%H)
+          DSTR=$(TZ=$TZ date +%F' '%T' '%Z)
+          echo "Local time: $DSTR (hour=$HOUR)"
+
+          # Allowed polling window: 19:00–02:59 Melbourne time
+          # - Before midnight (19:00–23:59): forecast for *current* Melbourne date
+          # - After midnight  (00:00–02:59): forecast for *(current Melbourne date - 1 day)*
+          IN_WINDOW=0
+          if [ "$HOUR" -ge 19 ] || [ "$HOUR" -le 2 ]; then
+            IN_WINDOW=1
+          fi
+          echo "in_window=$IN_WINDOW" >> $GITHUB_OUTPUT
+
+          if [ "$HOUR" -le 2 ]; then
+            PREDICT_DATE=$(TZ=$TZ date -d "yesterday" +%Y-%b-%d)
+          else
+            PREDICT_DATE=$(TZ=$TZ date +%Y-%b-%d)
+          fi
+          echo "predict_date=$PREDICT_DATE" >> $GITHUB_OUTPUT
+          echo "Computed PREDICT_DATE=$PREDICT_DATE"
+
+      - name: Skip if outside window
+        if: steps.when.outputs.in_window != '1'
+        run: |
+          echo "Outside 19:00–02:59 $TZ window. Skipping."
+
+      - name: Ensure dirs and history file
+        if: steps.when.outputs.in_window == '1'
+        run: |
+          mkdir -p data models/v3.3 preds
+          if [ ! -f data/NHL_HISTORY_UNION.csv ]; then
+            echo "name,team,opponent,home_or_away,date,points" > data/NHL_HISTORY_UNION.csv
+          fi
+
+      - name: Update history (FINAL results, last 2 days)
+        if: steps.when.outputs.in_window == '1'
+        env:
+          SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+        run: |
+          if [ -z "${SPORTSDATA_API_KEY}" ]; then
+            echo "SPORTSDATA_API_KEY secret missing"; exit 1
+          fi
+          python -m white_shorts.etl.update_history_from_api             --history_csv data/NHL_HISTORY_UNION.csv             --since_days 2             --key "${SPORTSDATA_API_KEY}"
+
+      - name: Check projections availability
+        if: steps.when.outputs.in_window == '1'
+        id: probe
+        env:
+          SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+          DATE_MON: ${{ steps.when.outputs.predict_date }}
+        run: |
+          BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
+          URL="${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
+          echo "Probing projections: ${URL}"
+          HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+            echo "Projection API not ready (HTTP $HTTP_CODE)."
+            exit 0
+          fi
+          COUNT=$(python - <<'PY'
+import json
+try:
+    with open("proj.json","r",encoding="utf-8") as f:
+        data=json.load(f)
+    print(len(data) if isinstance(data,list) else 0)
+except Exception:
+    print(0)
+PY
+)
+          echo "Found ${COUNT} projected player rows."
+          echo "http_code=200" >> $GITHUB_OUTPUT
+          echo "count=${COUNT}" >> $GITHUB_OUTPUT
+
+      - name: Exit early if projections not ready (count < 10)
+        if: steps.probe.outputs.count == '0' || steps.probe.outputs.count == '' || steps.probe.outputs.count == 'null' || steps.probe.outputs.count < 10
+        run: |
+          echo "Projections not ready (or too few). Will check again next run."
+          exit 0
+
+      - name: Train (quick RF refresh)
+        if: steps.when.outputs.in_window == '1'
+        run: |
+          # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
+          python train_compare_season.py             --csv data/NHL_HISTORY_UNION.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
+
+      - name: Predict with projections
+        if: steps.when.outputs.in_window == '1'
+        env:
+          SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+          DATE_MON: ${{ steps.when.outputs.predict_date }}
+        run: |
+          python batch_predict_by_player.py             --csv data/NHL_HISTORY_UNION.csv             --head_to_head models/v3.3/per_player_head_to_head.csv             --rf_model models/v3.3/rf_points_forecaster.pkl             --dss_model models/v3.3/dss_model.pt             --date "${DATE_MON}"             --key "${SPORTSDATA_API_KEY}"             --out_csv preds/preds_${DATE_MON}.csv             --diagnostics_csv preds/missing_${DATE_MON}.csv
+
+      - name: Commit prediction artifacts
+        if: steps.when.outputs.in_window == '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/NHL_HISTORY_UNION.csv preds/*.csv models/v3.3/* || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+            git push origin GP_Refactor
+          fi
+
+      - name: Email completion (success)
+        if: steps.when.outputs.in_window == '1'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server: ${{ secrets.SMTP_SERVER }}
+          port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "WhiteShorts: Forecast complete for ${{ steps.when.outputs.predict_date }}"
+          to: ${{ secrets.NOTIFY_TO_EMAIL }}
+          from: ${{ secrets.NOTIFY_FROM_EMAIL }}
+          content_type: text/plain
+          body: |
+            Forecast completed.
+            Date: ${{ steps.when.outputs.predict_date }}
+            Repo: ${{ github.repository }}
+            Run:  ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
