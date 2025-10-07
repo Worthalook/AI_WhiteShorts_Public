@@ -1,0 +1,16 @@
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "white-shorts"
+version = "3.3.0"
+description = "NHL points forecasting toolkit"
+requires-python = ">=3.10"
+readme = "README.md"
+authors = [{name="WhiteShorts AI"}]
+dependencies = ["numpy","pandas","scikit-learn","joblib","torch","requests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

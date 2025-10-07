@@ -1,0 +1,23 @@
+
+name: ci
+on:
+  push:
+    branches: [ "GP_Refactor" ]
+  pull_request:
+    branches: [ "main", "GP_Refactor" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Lint
+        run: |
+          pip install flake8
+          flake8 src
