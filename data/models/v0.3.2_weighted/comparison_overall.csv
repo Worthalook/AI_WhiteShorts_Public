@@ -1,0 +1,3 @@
+model,overall_test_MAE,artifact
+RandomForest (feature),0.3083645525587555,rf_points_forecaster.pkl
+DSS-lite (GRU),0.264195075447663,dss_model.pt
