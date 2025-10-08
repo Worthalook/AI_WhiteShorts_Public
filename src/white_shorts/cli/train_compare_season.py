@@ -185,22 +185,50 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
     if "home_or_away" not in df.columns:
         raise ValueError("Missing required column: home_or_away")
 
-    # 1) try direct numeric coercion (handles 0/1 already)
-    num = pd.to_numeric(df["home_or_away"], errors="coerce")
+  
+    # 0) Flatten any nested structures to a scalar (first element) per row
+    def _scalarize(v):
+        try:
+            import numpy as _np
+            import pandas as _pd
+        except Exception:
+            pass
+        # list / tuple
+        if isinstance(v, (list, tuple)) and len(v):
+            return v[0]
+        # numpy array
+        try:
+            import numpy as _np
+            if isinstance(v, _np.ndarray) and v.size:
+                return v.flat[0]
+        except Exception:
+            pass
+        # pandas Series
+        try:
+            import pandas as _pd
+            if isinstance(v, _pd.Series) and not v.empty:
+                return v.iloc[0]
+        except Exception:
+            pass
+        return v
 
-    # 2) map common string variants
-    str_map = (
-        df["home_or_away"]
-          .astype(str).str.strip().str.upper()
-          .map({
-              "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1,
-              "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0
-          })
+    s = df["home_or_away"].map(_scalarize)
+
+    # 1) try direct numeric coercion (handles 0/1, booleans True/False -> 1/0)
+    num = pd.to_numeric(s, errors="coerce")
+
+    # 2) map common string variants (HOME/AWAY, H/A, TRUE/FALSE, '1'/'0', etc.)
+    mapped = (
+        s.astype(str).str.strip().str.upper().map({
+            "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1, "YES": 1, "Y": 1,
+            "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0, "NO": 0, "N": 0,
+        })
     )
 
-    # 3) combine: prefer mapped, else numeric, else NaN
-    df["home_or_away"] = str_map.fillna(num).astype(float)
+    # 3) prefer mapped string results, else numeric, else NaN
+    df["home_or_away"] = mapped.fillna(num).astype(float)
     # ---------------------------------------------------------------------------
+
 
     # END REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A
 
