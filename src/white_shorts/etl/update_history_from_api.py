@@ -205,12 +205,13 @@ def main():
     add_df["points"] = add_df["points"].astype(float)
 
     # Merge & dedupe: prefer the *latest* row for a (name,team,date,opponent)
-    merged = pd.concat([hist, add_df], ignore_index=True, sort=False)
-    key_cols = ["name","team","date","opponent"]
-    if not set(key_cols).issubset(merged.columns):
-        missing = [c for c in key_cols if c not in merged.columns]
-        raise SystemExit(f"History is missing columns: {missing}")
-    merged = merged.drop_duplicates(subset=key_cols, keep="last")
+    # NO MORE MERGE - col issues
+    # merged = pd.concat([hist, add_df], ignore_index=True, sort=False)
+    # key_cols = ["name","team","date","opponent"]
+    #if not set(key_cols).issubset(merged.columns):
+    #    missing = [c for c in key_cols if c not in merged.columns]
+    #    raise SystemExit(f"History is missing columns: {missing}")
+    #merged = merged.drop_duplicates(subset=key_cols, keep="last")
 
     dprint(f"History size: {len(hist)} -> {len(merged)} (+{len(merged)-len(hist)})")
 
@@ -226,7 +227,7 @@ def main():
         out_path = Path(args.write) if args.write else hist_path  # refresh
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    merged.to_csv(out_path, index=False)
+    add_df.to_csv(out_path, index=False)
     dprint(f"Wrote updated history: {out_path}")
 
 if __name__ == "__main__":
