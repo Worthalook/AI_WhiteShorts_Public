@@ -103,7 +103,7 @@ jobs:
                 print(len(data) if isinstance(data,list) else 0)
             except Exception:
                 print(0)
-            PY()
+            )
 
           echo "Found ${COUNT} projected player rows."
           echo "http_code=200" >> $GITHUB_OUTPUT
