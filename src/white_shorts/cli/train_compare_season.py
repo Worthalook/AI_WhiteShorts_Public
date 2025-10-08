@@ -213,29 +213,32 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
             pass
         return v
 
-    s = df["home_or_away"].map(_scalarize)
+    s = df["home_or_away"]#.map(_scalarize)
 
     # 1) try direct numeric coercion (handles 0/1, booleans True/False -> 1/0)
     try:
         num = pd.to_numeric(s, errors="coerce")
     except Exception:
-        print(f"home_or_away NOT NUMERIC. Actual: {s}")
+        print(f"home_or_away NOT NUMERIC. Actual: {s} ---")
         num = 0
         pass
             
+    try:
+        # 2) map common string variants (HOME/AWAY, H/A, TRUE/FALSE, '1'/'0', etc.)
+        mapped = (
+            s.astype(str).str.strip().str.upper().map({
+                "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1, "YES": 1, "Y": 1,
+                "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0, "NO": 0, "N": 0,
+            })
+        )
 
-    # 2) map common string variants (HOME/AWAY, H/A, TRUE/FALSE, '1'/'0', etc.)
-    mapped = (
-        s.astype(str).str.strip().str.upper().map({
-            "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1, "YES": 1, "Y": 1,
-            "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0, "NO": 0, "N": 0,
-        })
-    )
-
-    # 3) prefer mapped string results, else numeric, else NaN
-    df["home_or_away"] = mapped.fillna(num).astype(float)
-    # ---------------------------------------------------------------------------
-
+        # 3) prefer mapped string results, else numeric, else NaN
+        df["home_or_away"] = mapped.fillna(num).astype(float)
+        # ---------------------------------------------------------------------------
+    except Exception:
+        print(f"home_or_away NOT MAPPED. Actual: {s} ---")
+        #df["home_or_away"] = 
+        pass
 
     # END REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A
 
