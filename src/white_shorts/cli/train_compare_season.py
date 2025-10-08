@@ -31,7 +31,7 @@ def normalize_cols(columns):
         if k in lower: m["name"] = lower[k]; break
     for k in ["points","pts","score","scored"]:
         if k in lower: m["points"] = lower[k]; break
-    for k in ["home_or_away", "homeoraway","home_away","home","is_home","homeaway"]:
+    for k in ["homeoraway","home_away","home","is_home","homeaway"]:
         if k in lower: m["home_or_away"] = lower[k]; break
     for k in ["team","team_name","club"]:
         if k in lower: m["team"] = lower[k]; break
@@ -179,70 +179,7 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
         **({cm["date"]:"date"} if "date" in cm else {}),
         **({cm["season"]:"season"} if "season" in cm else {})
     })
-    # REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A    
-    # OLD-----df["home_or_away"] = df["home_or_away"].apply(to_home_flag).astype(float)
-    # --- robust normalization of home_or_away to {0.0, 1.0} --------------------
-    if "home_or_away" not in df.columns:
-        raise ValueError("Missing required column: home_or_away")
-
-  
-    # 0) Flatten any nested structures to a scalar (first element) per row
-    def _scalarize(v):
-        try:
-            import numpy as _np
-            import pandas as _pd
-       
-            # list / tuple
-            if isinstance(v, (list, tuple)) and len(v):
-                return v[0]
-        except Exception:
-            pass
-        # numpy array
-        try:
-            import numpy as _np
-            if isinstance(v, _np.ndarray) and v.size:
-                return v.flat[0]
-        except Exception:
-            pass
-        # pandas Series
-        try:
-            import pandas as _pd
-            if isinstance(v, _pd.Series) and not v.empty:
-                return v.iloc[0]
-        except Exception:
-            pass
-        return v
-
-    s = df["home_or_away"]#.map(_scalarize)
-
-    # 1) try direct numeric coercion (handles 0/1, booleans True/False -> 1/0)
-    try:
-        num = pd.to_numeric(s, errors="coerce")
-    except Exception:
-        print(f"home_or_away NOT NUMERIC. Actual: {s} ---")
-        num = 0
-        pass
-            
-    try:
-        # 2) map common string variants (HOME/AWAY, H/A, TRUE/FALSE, '1'/'0', etc.)
-        mapped = (
-            s.astype(str).str.strip().str.upper().map({
-                "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1, "YES": 1, "Y": 1,
-                "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0, "NO": 0, "N": 0,
-            })
-        )
-
-        # 3) prefer mapped string results, else numeric, else NaN
-        df["home_or_away"] = mapped.fillna(num).astype(float)
-        # ---------------------------------------------------------------------------
-    except Exception:
-        print(f"home_or_away NOT MAPPED. Actual: {s} ---")
-        #df["home_or_away"] = 
-        pass
-
-    # END REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A
-
-
+    df["home_or_away"] = df["home_or_away"].apply(to_home_flag).astype(float)
     if "date" in df.columns:
         df["parsed_date"] = df["date"].apply(try_parse_date)
         df = df.sort_values(["team" if "team" in df.columns else "name","parsed_date","points"], na_position="last")
