@@ -1,0 +1,8 @@
+[update_history] fetch 2025-Oct-06
+[update_history] WARNING: fetch failed for 2025-Oct-06: ConnectionError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+[update_history] fetch 2025-Oct-07
+[update_history] WARNING: fetch failed for 2025-Oct-07: ConnectionError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+[update_history] fetch 2025-Oct-08
+[update_history] WARNING: fetch failed for 2025-Oct-08: ConnectionError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+[update_history] No rows fetched.
+. was unexpected at this time.

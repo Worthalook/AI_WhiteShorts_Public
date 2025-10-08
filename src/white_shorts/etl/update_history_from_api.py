@@ -117,19 +117,30 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
     final = final.dropna(subset=["name","team","date"])
     return final
 
-def fetch_results_by_date(date_mon: str, key: str) -> pd.DataFrame:
+def fetch_results_by_date(date_mon: str, key: str, tries: int = 3, timeout: int = 45) -> pd.DataFrame:
     if requests is None:
         raise SystemExit("The 'requests' package is unavailable; install it locally to call the API.")
-    # PlayerGameStatsByDate returns FINAL boxscore stats
+
     base = "https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameStatsByDate"
     url = f"{base}/{date_mon}?key={key}"
-    r = requests.get(url, timeout=45)
-    if r.status_code != 200:
-        raise SystemExit(f"SportsData.io API returned {r.status_code}: {r.text[:300]}")
-    data = r.json()
-    if not isinstance(data, list):
-        raise SystemExit("Unexpected payload shape: expected a JSON array.")
-    return pd.DataFrame(data)
+
+    last_err = None
+    for attempt in range(1, tries + 1):
+        try:
+            r = requests.get(url, timeout=timeout)
+            r.raise_for_status()
+            data = r.json()
+            if not isinstance(data, list):
+                # Gracefully coerce to empty DF when payload is unexpected
+                return pd.DataFrame([])
+            return pd.DataFrame(data)
+        except requests.RequestException as e:
+            last_err = e
+            # backoff: 2s, 4s, 8s ...
+            time.sleep(2 ** attempt)
+    # If we exhausted retries, re-raise so caller can decide
+    raise last_err
+
 
 def to_mon_date(d: datetime) -> str:
     return d.strftime("%Y-%b-%d")  # e.g., 2025-May-07
@@ -161,12 +172,22 @@ def main():
     for d in date_iter(start, end):
         mon = to_mon_date(d)
         dprint(f"fetch {mon}")
-        df_raw = fetch_results_by_date(mon, key)
+        try:
+            df_raw = fetch_results_by_date(mon, key, tries=3, timeout=45)
+        except Exception as e:
+            dprint(f"WARNING: fetch failed for {mon}: {type(e).__name__}: {e}")
+            # Skip this day and continue; do not fail the whole run
+            time.sleep(args.rate_delay)
+            continue
+
         if df_raw.empty:
-            time.sleep(args.rate_delay); continue
+            time.sleep(args.rate_delay)
+            continue
+
         # Filter: only completed games; defensively keep all if flag missing
         if "IsGameOver" in df_raw.columns:
             df_raw = df_raw[df_raw["IsGameOver"] == True].copy()
+
         new_rows = normalize_result_rows(df_raw)
         if not new_rows.empty:
             all_new.append(new_rows)

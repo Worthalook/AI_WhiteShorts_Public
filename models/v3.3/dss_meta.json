@@ -1,0 +1,16 @@
+{
+  "epochs": 2,
+  "feat_cols": [
+    "lag_1",
+    "lag_2",
+    "lag_3",
+    "home_or_away",
+    "days_rest_capped",
+    "rest_anomaly",
+    "team_prev_mean_pts",
+    "team_prev_std_pts",
+    "player_vs_opp_avg",
+    "team_vs_opp_last_mean",
+    "opp_days_since_last_meeting"
+  ]
+}
