@@ -96,21 +96,21 @@ jobs:
             exit 0
           fi
           COUNT=$(python - <<'PY'
-import json
-try:
-    with open("proj.json","r",encoding="utf-8") as f:
-        data=json.load(f)
-    print(len(data) if isinstance(data,list) else 0)
-except Exception:
-    print(0)
-PY
-)
+            import json
+            try:
+                with open("proj.json","r",encoding="utf-8") as f:
+                    data=json.load(f)
+                print(len(data) if isinstance(data,list) else 0)
+            except Exception:
+                print(0)
+            PY()
+
           echo "Found ${COUNT} projected player rows."
           echo "http_code=200" >> $GITHUB_OUTPUT
           echo "count=${COUNT}" >> $GITHUB_OUTPUT
 
       - name: Exit early if projections not ready (count < 10)
-        if: steps.probe.outputs.count == '0' || steps.probe.outputs.count == '' || steps.probe.outputs.count == 'null' || steps.probe.outputs.count < 10
+        if: ${{ steps.probe.outputs.count == '0' || steps.probe.outputs.count == '' || steps.probe.outputs.count == 'null' || steps.probe.outputs.count < 10 }}
         run: |
           echo "Projections not ready (or too few). Will check again next run."
           exit 0
