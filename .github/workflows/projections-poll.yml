@@ -78,36 +78,45 @@ jobs:
           fi
           python -m white_shorts.etl.update_history_from_api             --history_csv data/NHL_HISTORY_UNION.csv             --since_days 2             --key "${SPORTSDATA_API_KEY}"
 
-      - name: Check projections availability
-        if: steps.when.outputs.in_window == '1'
-        id: probe
-        env:
-          SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
-          DATE_MON: ${{ steps.when.outputs.predict_date }}
-        run: |
-          BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
-          URL="${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
-          echo "Probing projections: ${URL}"
-          HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
-            echo "count=0" >> $GITHUB_OUTPUT
-            echo "Projection API not ready (HTTP $HTTP_CODE)."
-            exit 0
-          fi
-          COUNT=$(python - <<'PY'
-            import json
-            try:
-                with open("proj.json","r",encoding="utf-8") as f:
-                    data=json.load(f)
-                print(len(data) if isinstance(data,list) else 0)
-            except Exception:
+          - name: Check projections availability
+            if: steps.when.outputs.in_window == '1'
+            id: probe
+            env:
+              SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+              DATE_MON: ${{ steps.when.outputs.predict_date }}
+              shell: bash
+            run: |
+              set -euo pipefail
+              BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
+              URL="${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
+              echo "Probing projections: ${URL}"
+              HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
+              if [ "$HTTP_CODE" != "200" ]; then
+                echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+                echo "count=0" >> "$GITHUB_OUTPUT"
+                echo "Projection API not ready (HTTP $HTTP_CODE)."
+                exit 0
+              fi
+
+          # Robust Python one-liner, no heredoc
+              COUNT=$(
+                python - <<'PY' 2>/dev/null || true
+                import json, sys
+                try:
+                  with open("proj.json","r",encoding="utf-8") as f:
+                    d=json.load(f)
+                    print(len(d) if isinstance(d,list) else 0)
+                except Exception:
                 print(0)
-            )
+              PY
+          )
+          # If the heredoc still bothers YAML, replace the above with this one-liner instead:
+          # COUNT=$(python -c "import json,sys; import io; d=json.load(open('proj.json','r',encoding='utf-8')); print(len(d) if isinstance(d,list) else 0)" 2>/dev/null || echo 0)
 
           echo "Found ${COUNT} projected player rows."
-          echo "http_code=200" >> $GITHUB_OUTPUT
-          echo "count=${COUNT}" >> $GITHUB_OUTPUT
+          echo "http_code=200" >> "$GITHUB_OUTPUT"
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+
 
       - name: Exit early if projections not ready (count < 10)
         if: ${{ steps.probe.outputs.count == '0' || steps.probe.outputs.count == '' || steps.probe.outputs.count == 'null' || steps.probe.outputs.count < 10 }}
