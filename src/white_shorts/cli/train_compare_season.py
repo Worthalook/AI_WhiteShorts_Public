@@ -31,7 +31,7 @@ def normalize_cols(columns):
         if k in lower: m["name"] = lower[k]; break
     for k in ["points","pts","score","scored"]:
         if k in lower: m["points"] = lower[k]; break
-    for k in ["homeoraway","home_away","home","is_home","homeaway"]:
+    for k in ["home_or_away", "homeoraway","home_away","home","is_home","homeaway"]:
         if k in lower: m["home_or_away"] = lower[k]; break
     for k in ["team","team_name","club"]:
         if k in lower: m["team"] = lower[k]; break
