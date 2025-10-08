@@ -1,8 +1,9 @@
 name: projections-poll-and-predict
 
 on:
-  push:
-    branches: [ "GP_Refactor" ]
+  schedule:
+    # Every 30 minutes
+    - cron: "*/30 * * * *"
   workflow_dispatch: {}
 
 permissions:
