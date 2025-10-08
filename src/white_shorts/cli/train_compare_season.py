@@ -216,7 +216,13 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
     s = df["home_or_away"].map(_scalarize)
 
     # 1) try direct numeric coercion (handles 0/1, booleans True/False -> 1/0)
-    num = pd.to_numeric(s, errors="coerce")
+    try:
+        num = pd.to_numeric(s, errors="coerce")
+    except Exception:
+        print(f"home_or_away NOT NUMERIC. Actual: {s}")
+        num = 0
+        pass
+            
 
     # 2) map common string variants (HOME/AWAY, H/A, TRUE/FALSE, '1'/'0', etc.)
     mapped = (
