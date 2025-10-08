@@ -179,7 +179,32 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
         **({cm["date"]:"date"} if "date" in cm else {}),
         **({cm["season"]:"season"} if "season" in cm else {})
     })
-    df["home_or_away"] = df["home_or_away"].apply(to_home_flag).astype(float)
+    # REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A    
+    # OLD-----df["home_or_away"] = df["home_or_away"].apply(to_home_flag).astype(float)
+    # --- robust normalization of home_or_away to {0.0, 1.0} --------------------
+    if "home_or_away" not in df.columns:
+        raise ValueError("Missing required column: home_or_away")
+
+    # 1) try direct numeric coercion (handles 0/1 already)
+    num = pd.to_numeric(df["home_or_away"], errors="coerce")
+
+    # 2) map common string variants
+    str_map = (
+        df["home_or_away"]
+          .astype(str).str.strip().str.upper()
+          .map({
+              "HOME": 1, "H": 1, "TRUE": 1, "T": 1, "1": 1,
+              "AWAY": 0, "A": 0, "FALSE": 0, "F": 0, "0": 0
+          })
+    )
+
+    # 3) combine: prefer mapped, else numeric, else NaN
+    df["home_or_away"] = str_map.fillna(num).astype(float)
+    # ---------------------------------------------------------------------------
+
+    # END REPLACE WITH BELOW TO GUARD AGAINST LIST vs BOOL H&A
+
+
     if "date" in df.columns:
         df["parsed_date"] = df["date"].apply(try_parse_date)
         df = df.sort_values(["team" if "team" in df.columns else "name","parsed_date","points"], na_position="last")
