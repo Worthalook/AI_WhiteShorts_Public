@@ -213,7 +213,7 @@ def main():
     #    raise SystemExit(f"History is missing columns: {missing}")
     #merged = merged.drop_duplicates(subset=key_cols, keep="last")
 
-    dprint(f"History size: {len(hist)} -> {len(merged)} (+{len(merged)-len(hist)})")
+    #dprint(f"History size: {len(hist)} -> {len(merged)} (+{len(merged)-len(hist)})")
 
     if args.dry_run:
         dprint("Dry run, not writing.")
