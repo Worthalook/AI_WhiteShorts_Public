@@ -191,11 +191,12 @@ def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple
         try:
             import numpy as _np
             import pandas as _pd
+       
+            # list / tuple
+            if isinstance(v, (list, tuple)) and len(v):
+                return v[0]
         except Exception:
             pass
-        # list / tuple
-        if isinstance(v, (list, tuple)) and len(v):
-            return v[0]
         # numpy array
         try:
             import numpy as _np
