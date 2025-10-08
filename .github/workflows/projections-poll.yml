@@ -83,7 +83,7 @@ jobs:
             exit 1
           fi
           python -m white_shorts.etl.update_history_from_api \
-            --history_csv data/NHL_HISTORY_UNION.csv \
+            --history_csv data/NHL_YTD.csv \
             --since_days 2 \
             --key "${SPORTSDATA_API_KEY}"
       
@@ -128,7 +128,8 @@ jobs:
         if: steps.when.outputs.in_window == '1'
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
-          python train_compare_season.py             --csv data/NHL_HISTORY_UNION.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
+          # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
+          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
 
       - name: Predict with projections
         if: steps.when.outputs.in_window == '1'
@@ -143,7 +144,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/NHL_HISTORY_UNION.csv preds/*.csv models/v3.3/* || true
+          git add data/NHL_YTD.csv data/NHL_HISTORY_UNION.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
