@@ -166,6 +166,25 @@ def infer_season(df: pd.DataFrame, season_col: str | None):
 
 def prepare_data(csv_path: str, lag_k=3, season_col: str | None = None) -> Tuple[pd.DataFrame, list]:
     df = pd.read_csv(csv_path)
+     #-------------------------------------------
+    # Always-on deterministic fallback for sorting
+    df["_order"] = np.arange(len(df), dtype=np.int64)
+
+    # Prefer a parsed date when available
+    if "date" in df.columns:
+        df["parsed_date"] = pd.to_datetime(df["date"], errors="coerce")
+
+    # Initial canonical sort (only keep keys that exist)
+    primary_team_key = "team" if "team" in df.columns else "name"
+    sort_keys = [c for c in (primary_team_key, "parsed_date", "points", "_order") if c in df.columns]
+    if sort_keys:
+        df = df.sort_values(sort_keys, na_position="last")
+
+    # Your existing cleaning
+    must_have = [c for c in ["name", "points", "home_or_away"] if c in df.columns]
+    if must_have:
+        df = df.dropna(subset=must_have)
+    #---------------------------------------------
     cm = normalize_cols(df.columns.tolist())
     for req in ["name","points","home_or_away"]:
         if req not in cm:
@@ -293,7 +312,9 @@ class PlayerSeqDataset(Dataset):
         self.samples = []
         dfx = dfi.loc[mask].copy()
         for _, g in dfx.groupby("name"):
-            g = g.sort_values("parsed_date" if "parsed_date" in g.columns else "_row")
+            keys = [c for c in ("parsed_date", "_order") if c in g.columns]
+            g = g.sort_values(keys, na_position="last") if keys else g.reset_index(drop=True)
+            #g = g.sort_values("parsed_date" if "parsed_date" in g.columns else "_row")
             X = g[feat_cols].values.astype(np.float32)
             y = g["points"].values.astype(np.float32)
             if "row_weight" in g.columns:
