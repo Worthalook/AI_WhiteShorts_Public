@@ -124,7 +124,7 @@ jobs:
           echo "Projections not ready (or too few). Will check again next run."
 
       - name: Train (quick RF refresh)
-        #if: steps.when.outputs.in_window == '1'
+        if: steps.when.outputs.in_window == '1'
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
@@ -153,7 +153,7 @@ jobs:
           fi
 
       - name: Email completion (success)
-        if: steps.when.outputs.in_window == '1'
+        #if: steps.when.outputs.in_window == '1'
         uses: dawidd6/action-send-mail@v3
         with:
           server: ${{ secrets.SMTP_SERVER }}
