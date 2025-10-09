@@ -156,15 +156,15 @@ jobs:
         #if: steps.when.outputs.in_window == '1'
         uses: dawidd6/action-send-mail@v3
         with:
-          server: ${{ secrets.SMTP_SERVER }}
-          port: ${{ secrets.SMTP_PORT }}
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
           secure: true
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: "WhiteShorts: Forecast complete for ${{ steps.when.outputs.predict_date }}"
           to: ${{ secrets.NOTIFY_TO_EMAIL }}
           from: ${{ secrets.NOTIFY_FROM_EMAIL }}
-          content_type: text/plain
+         # content_type: text/plain
           body: |
             Forecast completed.
             Date: ${{ steps.when.outputs.predict_date }}
