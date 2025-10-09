@@ -72,7 +72,7 @@ jobs:
 
       # --- 1) Update history (FINAL results, last 2 days)
       - name: Update history (FINAL results, last 2 days)
-        if: ${{ steps.when.outputs.in_window == '1' }}
+        #if: ${{ steps.when.outputs.in_window == '1' }}
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
         shell: bash
@@ -143,7 +143,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/NHL_YTD.csv data/NHL_YTD.csv preds/*.csv models/v3.3/* || true
+          git add data/NHL_YTD.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
