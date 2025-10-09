@@ -122,7 +122,6 @@ jobs:
         shell: bash
         run: |
           echo "Projections not ready (or too few). Will check again next run."
-          exit 0
 
       - name: Train (quick RF refresh)
         if: steps.when.outputs.in_window == '1'
