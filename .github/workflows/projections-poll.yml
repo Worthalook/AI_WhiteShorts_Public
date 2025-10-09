@@ -1,7 +1,7 @@
 name: projections-poll-and-predict
 on:
   push:
-    branches: [ "GP_Refactor" ]
+    branches: [ "goal_assist_and_metrics_upgrade" ]
 
    #schedule:
     #### Every 30 minutes
@@ -18,10 +18,10 @@ jobs:
   poll-and-predict:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout GP_Refactor
+      - name: Checkout goal_assist_and_metrics_upgrade
         uses: actions/checkout@v4
         with:
-          ref: GP_Refactor
+          ref: goal_assist_and_metrics_upgrade
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -181,7 +181,7 @@ jobs:
           else
             TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
-            git push origin GP_Refactor
+            git push origin goal_assist_and_metrics_upgrade
           fi
 
       - name: Email completion (success)
