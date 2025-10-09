@@ -1,0 +1,22 @@
+# config.yaml
+artifacts_dir: ./artifacts
+features: [age, time_on_ice, line, opp_def_strength, recent_form, ...]
+lgbm_params:
+  learning_rate: 0.05
+  num_leaves: 64
+  feature_fraction: 0.9
+  bagging_fraction: 0.9
+  bagging_freq: 1
+  lambda_l2: 2.0
+num_boost_round: 1200
+early_stopping: 50
+
+# two-stage parameters (only used if TaskSpec.two_stage=True)
+clf_params:
+  n_estimators: 600
+  learning_rate: 0.05
+  num_leaves: 48
+reg_params:
+  n_estimators: 800
+  learning_rate: 0.05
+  num_leaves: 64

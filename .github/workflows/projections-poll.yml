@@ -56,7 +56,34 @@ jobs:
           fi
           echo "predict_date=$PREDICT_DATE" >> $GITHUB_OUTPUT
           echo "Computed PREDICT_DATE=$PREDICT_DATE"
+        #---------------------------
+      - name: Initialize DB if missing
+        run: |
+            if [ ! -f whiteshorts.db ]; then
+                python init_db.py || true
+            fi
 
+      - name: Import YTD outcomes for metrics
+        run: |
+            python import_results.py           --csv_path data/NHL_YTD.csv           --date_col Date           --home_team_col Home           --away_team_col Away           --home_score_col HomeGoals           --away_score_col AwayGoals           --update_elo
+
+      - name: Import predictions (dedup)
+        run: |
+            python import_predictions.py           --csv_path data/out/predictions_*.csv           --date_col game_date           --home_team_col home_team           --away_team_col away_team           --prob_col home_win_prob           --prob_is_home           --model_name whiteshorts           --model_version ${{ github.sha }}
+
+      - name: Compute metrics
+        run: |
+            python compute_metrics.py || true
+
+      - name: Commit updated DB
+        run: |
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add whiteshorts.db || true
+            git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
+            git push
+
+        #---------------------------
       - name: Skip if outside window
         if: steps.when.outputs.in_window != '1'
         run: |
@@ -128,7 +155,12 @@ jobs:
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
-          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
+          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2
+          #train lighter model to get an idea of goal-assist split
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Assists"
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Points"
+          #             --task "Goals"             --task "Points"
 
       - name: Predict with projections
         if: steps.when.outputs.in_window == '1'

@@ -1,0 +1,37 @@
+
+# GitHub Actions snippet to call import scripts and commit DB
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install deps
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy
+
+    - name: Initialize DB if missing
+      run: |
+        if [ ! -f whiteshorts.db ]; then
+          python init_db.py || true
+        fi
+
+    - name: Import YTD outcomes
+      run: |
+        python import_results.py           --csv_path data/NHL_YTD.csv           --date_col Date           --home_team_col Home           --away_team_col Away           --home_score_col HomeGoals           --away_score_col AwayGoals           --update_elo
+
+    - name: Import predictions (dedup)
+      run: |
+        python import_predictions.py           --csv_path data/out/predictions_2025-05-01.csv           --date_col game_date           --home_team_col home_team           --away_team_col away_team           --prob_col home_win_prob           --prob_is_home           --model_name whiteshorts           --model_version ${{ github.sha }}
+
+    - name: Compute metrics
+      run: |
+        python compute_metrics.py || true
+
+    - name: Commit updated DB
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@users.noreply.github.com"
+        git add whiteshorts.db || true
+        git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
+        git push
