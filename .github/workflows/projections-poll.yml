@@ -128,7 +128,7 @@ jobs:
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
-          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
+         #S python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 1
 
       - name: Predict with projections
         if: steps.when.outputs.in_window == '1'
