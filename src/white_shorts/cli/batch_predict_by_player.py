@@ -204,13 +204,15 @@ def _feature_engineer_from_raw(raw_df: pd.DataFrame, lag_k=3):
     return df, feat_cols
 
 def prepare_history_union(csv: str | None, csv_ytd: str | None, csv_last: str | None, lag_k=3):
-    if csv and (csv_ytd or csv_last):
-        raise SystemExit("Use either --csv OR (--csv_ytd and/or --csv_last), not both.")
-    if csv:
-        raw = pd.read_csv(csv)
-        return _feature_engineer_from_raw(raw, lag_k=lag_k)
-    if not csv_ytd and not csv_last:
-        raise SystemExit("Provide --csv or at least one of --csv_ytd / --csv_last.")
+   # raw = pd.read_csv(csv_ytd)
+  #  return _feature_engineer_from_raw(raw, lag_k=lag_k)
+  #  if csv and (csv_ytd or csv_last):
+  #      raise SystemExit("Use either --csv OR (--csv_ytd and/or --csv_last), not both.")
+  #  if csv:
+  #      raw = pd.read_csv(csv)
+  #      return _feature_engineer_from_raw(raw, lag_k=lag_k)
+  #  if not csv_ytd and not csv_last:
+  #      raise SystemExit("Provide --csv or at least one of --csv_ytd / --csv_last.")
     frames = []
     if csv_last:
         frames.append(pd.read_csv(csv_last))
@@ -308,7 +310,7 @@ def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--csv", default=None, help="Single, already-unioned history CSV")
+    ap.add_argument("--csv", default=None, help="Single, already-unioned history CSV") #not used after rollback
     ap.add_argument("--csv_ytd", default=None, help="This season rolling file (will be unioned if provided)")
     ap.add_argument("--csv_last", default=None, help="Last season static file (will be unioned if provided)")
     ap.add_argument("--head_to_head", required=True, help="per_player_head_to_head.csv (winner per player)")
