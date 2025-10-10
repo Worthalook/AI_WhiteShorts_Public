@@ -374,9 +374,12 @@ def main():
         proj_raw = fetch_projections(mon_date, args.key)
 
     proj = projections_to_rows(proj_raw)
-    if args.team_filter is not None and "Team" in proj_raw.columns:
-        proj = proj[proj["team"].astype(str).str.upper() == args.team_filter.upper()].copy()
+    
+    #if args.team_filter is not None and "Team" in proj_raw.columns: 
 
+    if args.team_filter and "team" in proj.columns:
+        proj = proj[proj["team"].astype(str).str.upper() == args.team_filter.upper()].copy()
+        
     names_in_hist = set(hist_df["name"].unique().tolist())
     missing_rows = proj[~proj["name"].isin(names_in_hist)].copy()
     if args.diagnostics_csv:
