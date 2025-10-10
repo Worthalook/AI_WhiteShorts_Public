@@ -105,6 +105,7 @@ jobs:
             --history_csv data/NHL_YTD.csv \
             --since_days 2 \
             --key "${SPORTSDATA_API_KEY}"
+          python update_history_from_api.py --history_csv data/NHL_2023_24.csv --since_days 380 --key "3cafb838ee6d41d7afc0ec33174884a2"
       
       # --- 2) Check projections availability
       - name: Check projections availability
@@ -161,7 +162,7 @@ jobs:
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
-          #python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2
+          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2
           #train lighter model to get an idea of goal-assist split
           python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Assists"
           python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"
@@ -181,7 +182,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/NHL_YTD.csv preds/*.csv models/v3.3/* || true
+          git add data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
