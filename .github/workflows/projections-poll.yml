@@ -73,13 +73,7 @@ jobs:
         run: |
             python compute_metrics.py || true
 
-      - name: Commit updated DB
-        run: |
-            git config user.name "github-actions"
-            git config user.email "github-actions@users.noreply.github.com"
-            git add whiteshorts.db || true
-            git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
-            git push
+      
 
         #---------------------------
       - name: Skip if outside window
@@ -147,6 +141,20 @@ jobs:
         shell: bash
         run: |
           echo "Projections not ready (or too few). Will check again next run."
+      - name: Debug ONLY
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "gareth.reid123@gmail.com"
+    
+          git add data/NHL_YTD.csv preds/*.csv models/v3.3/* || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+            git push origin goal_assist_and_metrics_upgrade
+          fi
 
       - name: Train (quick RF refresh)
         if: steps.when.outputs.in_window == '1'
@@ -181,7 +189,13 @@ jobs:
             git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
             git push origin goal_assist_and_metrics_upgrade
           fi
-
+      - name: Commit updated DB
+        run: |
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add whiteshorts.db || true
+            git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
+            git push
       - name: Email completion (success)
         if: steps.when.outputs.in_window == '1'
         uses: dawidd6/action-send-mail@v3
