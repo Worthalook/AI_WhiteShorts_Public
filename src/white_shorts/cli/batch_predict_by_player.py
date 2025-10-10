@@ -289,24 +289,46 @@ def load_offline_json(path: str) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
+    # 1) Normalize column names to avoid case/whitespace surprises
+    norm = {c: c.strip() for c in df.columns}
+    df = df.rename(columns=norm)
+
     cols = {
         "PlayerID": "player_id",
         "Name": "name",
         "Team": "team",
         "Opponent": "opponent",
-        "HomeOrAway": "home_away",
+        "HomeOrAway": "home_away",   # maps your JSON key
         "Position": "position",
         "DateTime": "datetime",
-        "Day": "day"
+        "Day": "day",
     }
     keep = [c for c in cols if c in df.columns]
     out = df[keep].rename(columns=cols).copy()
-    out["HomeOrAway_bool"] = (out["home_away"].astype(str).str.upper() == "HOME").astype(int)
-    if "day" in out and out["day"].notna().any():
+
+    # 2) Home/Away flag with resilient fallback
+    home_col = "home_away" if "home_away" in out.columns else None
+    if home_col is None:
+        # try to find variants if upstream changes
+        for c in out.columns:
+            if c.lower().replace("_", "") in {"homeoraway", "homeaway"}:
+                home_col = c
+                break
+
+    if home_col:
+        out["HomeOrAway_bool"] = (out[home_col].astype(str).str.upper().eq("HOME")).astype(int)
+    else:
+        # If absent, set NaN or 0 depending on your downstream needs
+        out["HomeOrAway_bool"] = np.nan
+
+    # 3) Target date selection
+    if "day" in out.columns and out["day"].notna().any():
         out["target_date"] = pd.to_datetime(out["day"], errors="coerce")
     else:
-        out["target_date"] = pd.to_datetime(out["datetime"], errors="coerce")
+        out["target_date"] = pd.to_datetime(out.get("datetime"), errors="coerce")
+
     return out
+
 
 def main():
     ap = argparse.ArgumentParser()
