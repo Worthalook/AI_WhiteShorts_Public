@@ -1,6 +1,6 @@
 # config.yaml
 artifacts_dir: ./artifacts
-features: [age, time_on_ice, line, opp_def_strength, recent_form, ...]
+features: ["assists", "goals", "points", "home_or_away", "shots_on_goal","power_play_assists","power_play_goals","goal_tending_goals_against"]
 lgbm_params:
   learning_rate: 0.05
   num_leaves: 64
