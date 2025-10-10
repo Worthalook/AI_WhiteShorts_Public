@@ -84,6 +84,7 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
         "HomeOrAway": "home_or_away_str",
         "Day": "day",
         "DateTime": "datetime",
+        "Minutes": "minutes",
         # scoring
         "Points": "points",
         "Goals": "goals",
@@ -91,7 +92,7 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
         # game status
         "IsGameOver": "is_over",
         "Updated": "updated_ts",
-        "Player_id": "player_id",
+        "PlayerID": "player_id",
         "GameID": "game_id",
         "GoaltendingGoalsAgainst": "goal_tending_goals_against",
         "PowerPlayGoals": "power_play_goals",
@@ -244,7 +245,9 @@ def main():
         out_path = Path(args.write) if args.write else hist_path  # refresh
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    ###Save result
+    ###*******************************Save result to db
+    #********TODO******************************************
+    ###*********Save result to db**********************
     add_df.to_csv(out_path, index=False)
     dprint(f"Wrote updated history: {out_path}")
 
