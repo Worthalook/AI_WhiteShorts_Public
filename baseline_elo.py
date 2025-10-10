@@ -1,4 +1,3 @@
-# Stub: delegates to package CLI
-from white_shorts.cli.baseline_elo import main
-if __name__ == "__main__":
-    main()
+DB_PATH = 'whiteshorts.db'
+def update_ratings_after_outcome(home, away, hs, as_):
+    pass
