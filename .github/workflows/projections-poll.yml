@@ -163,7 +163,7 @@ jobs:
           #             --task "Goals"             --task "Points"
 
       - name: Predict with projections
-        if: steps.when.outputs.in_window == '1'
+       # if: steps.when.outputs.in_window == '1'
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
           DATE_MON: ${{ steps.when.outputs.predict_date }}
