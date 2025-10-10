@@ -111,17 +111,19 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
     # Home/Away bool -> home_or_away (1=HOME,0=AWAY)
     out["home_or_away"] = out["home_or_away_str"].apply(to_bool_home).astype(int)
 
-    # Points: prefer provided "Points", else Goals + Assists
-    if "Points" in out.columns and out["Points"].notna().any():
-        out["points"] = pd.to_numeric(out["Points"], errors="coerce").fillna(0).astype(float)
-    else:
-        g = pd.to_numeric(out.get("Goals", 0), errors="coerce").fillna(0)
-        a = pd.to_numeric(out.get("Assists", 0), errors="coerce").fillna(0)
-        out["points"] = (g + a).astype(float)
-      
-       #player_id,name,date,minutes,points,goals,assists,home_or_away,gap_in_days
+    # fill zeros
+    out["points"] = pd.to_numeric(out["points"], errors="coerce").fillna(0).astype(float)
+    out["assists"] = pd.to_numeric(out["assists"], errors="coerce").fillna(0).astype(float)
+    out["goals"] = pd.to_numeric(out["goals"], errors="coerce").fillna(0).astype(float)
+    out["goal_tending_goals_against"] = pd.to_numeric(out["goal_tending_goals_against"], errors="coerce").fillna(0).astype(float)
+    out["power_play_goals"] = pd.to_numeric(out["power_play_goals"], errors="coerce").fillna(0).astype(float)
+    out["power_play_assists"] = pd.to_numeric(out["power_play_assists"], errors="coerce").fillna(0).astype(float)
+    out["shots_on_goal"] = pd.to_numeric(out["shots_on_goal"], errors="coerce").fillna(0).astype(float)
+
+   
+    #player_id,name,date,minutes,points,goals,assists,home_or_away,gap_in_days
     # Select final columns in our schema
-    final = out[["game_id","team","opponent","player_id","name","date","minutes","points","goals","assists","home_or_away","ShotsOnGoal","power_play_assists","power_play_goals","goal_tending_goals_against"]].copy()
+    final = out[["game_id","team","opponent","player_id","name","date","minutes","points","goals","assists","home_or_away","shots_on_goal","power_play_assists","power_play_goals","goal_tending_goals_against"]].copy()
     final = final.dropna(subset=["name","team","date"])
     return final
 
