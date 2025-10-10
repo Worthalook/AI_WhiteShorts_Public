@@ -33,8 +33,8 @@ def main():
         dates = pd.to_datetime(df[dcol], errors="coerce")
     df["_event_date"] = dates.dt.strftime("%Y-%m-%d")
     df["_home"] = df[hcol]; df["_away"] = df[acol]
-    df["_home_score"] = pd.to_numeric(df[hscol], errors="coerce").astype("Int64")
-    df["_away_score"] = pd.to_numeric(df[ascol], errors="coerce").astype("Int64")
+    #df["_home_score"] = pd.to_numeric(df[hscol], errors="coerce").astype("Int64")
+    #df["_away_score"] = pd.to_numeric(df[ascol], errors="coerce").astype("Int64")
     df["_event_id"] = [canonical_event_id(d, h, a) for d,h,a in zip(df["_event_date"], df["_home"], df["_away"])]
 
     conn = sqlite3.connect(args.db_path)

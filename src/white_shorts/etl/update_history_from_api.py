@@ -242,6 +242,7 @@ def main():
         out_path = Path(args.write) if args.write else hist_path  # refresh
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    ###Save result
     add_df.to_csv(out_path, index=False)
     dprint(f"Wrote updated history: {out_path}")
 
