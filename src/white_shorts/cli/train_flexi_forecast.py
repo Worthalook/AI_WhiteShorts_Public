@@ -1,5 +1,6 @@
 # train_flexi_forecast.py
-import argparse, pandas as pd, yaml
+import argparse, pandas as pd
+import yaml
 from trainer import GenericTrainer
 
 
