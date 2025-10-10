@@ -3,7 +3,7 @@
 
 # train_flexi_forecast.py
 import argparse, pandas as pd
-from yaml import Yaml
+import yaml as yaml
 from trainer import GenericTrainer
 
 

@@ -160,6 +160,7 @@ def main():
     args = parse_args()
     key = ensure_key(args)
 
+     
     # Build date range
     today = datetime.utcnow().date()
     if args.since_days is not None:
@@ -249,6 +250,9 @@ def main():
     #********TODO******************************************
     ###*********Save result to db**********************
     add_df.to_csv(out_path, index=False)
+    
+    
+    
     dprint(f"Wrote updated history: {out_path}")
 
 if __name__ == "__main__":
