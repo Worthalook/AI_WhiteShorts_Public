@@ -85,12 +85,19 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
         "Day": "day",
         "DateTime": "datetime",
         # scoring
-        "Points": "Points",
-        "Goals": "Goals",
-        "Assists": "Assists",
+        "Points": "points",
+        "Goals": "goals",
+        "Assists": "assists",
         # game status
         "IsGameOver": "is_over",
         "Updated": "updated_ts",
+        "Player_id": "player_id",
+        "GameID": "game_id",
+        "GoaltendingGoalsAgainst": "goal_tending_goals_against",
+        "PowerPlayGoals": "power_play_goals",
+        "PowerPlayAssists": "power_play_assists",
+        "ShotsOnGoal": "shots_on_goal"
+        
     }
     keep = [c for c in cols if c in df.columns]
     out = df[keep].rename(columns=cols).copy()
@@ -111,9 +118,10 @@ def normalize_result_rows(df: pd.DataFrame) -> pd.DataFrame:
         g = pd.to_numeric(out.get("Goals", 0), errors="coerce").fillna(0)
         a = pd.to_numeric(out.get("Assists", 0), errors="coerce").fillna(0)
         out["points"] = (g + a).astype(float)
-
+      
+       #player_id,name,date,minutes,points,goals,assists,home_or_away,gap_in_days
     # Select final columns in our schema
-    final = out[["name","team","opponent","home_or_away","date","points"]].copy()
+    final = out[["game_id","team","opponent","player_id","name","date","minutes","points","goals","assists","home_or_away","ShotsOnGoal","power_play_assists","power_play_goals","goal_tending_goals_against"]].copy()
     final = final.dropna(subset=["name","team","date"])
     return final
 
@@ -203,7 +211,14 @@ def main():
     # Standardize types
     add_df["home_or_away"] = add_df["home_or_away"].astype(int)
     add_df["points"] = add_df["points"].astype(float)
+    add_df["goals"] = add_df["goals"].astype(float)
+    add_df["assists"] = add_df["assists"].astype(float)
+    add_df["goal_tending_goals_against"] = add_df["goal_tending_goals_against"].astype(float)
+    add_df["power_play_goals"] = add_df["power_play_goals"].astype(float)
+    add_df["power_play_assists"] = add_df["power_play_assists"].astype(float)
+    add_df["shots_on_goal"] = add_df["shots_on_goal"].astype(float)
 
+        
     # Merge & dedupe: prefer the *latest* row for a (name,team,date,opponent)
     # NO MORE MERGE - col issues
     # merged = pd.concat([hist, add_df], ignore_index=True, sort=False)
