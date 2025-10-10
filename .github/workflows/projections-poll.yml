@@ -148,7 +148,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "gareth.reid123@gmail.com"
     
-          git add data/NHL_YTD.csv preds/*.csv models/v3.3/* || true
+          git add data/NHL_YTD.csv data/NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
