@@ -289,6 +289,9 @@ def load_offline_json(path: str) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
+    # normalize headers
+    df = df.rename(columns={c: c.strip() for c in df.columns})
+
     cols = {
         "PlayerID": "player_id",
         "Name": "name",
@@ -297,16 +300,35 @@ def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
         "HomeOrAway": "home_away",
         "Position": "position",
         "DateTime": "datetime",
-        "Day": "day"
+        "Day": "day",
     }
     keep = [c for c in cols if c in df.columns]
     out = df[keep].rename(columns=cols).copy()
-    out["HomeOrAway_bool"] = (out["home_away"].astype(str).str.upper() == "HOME").astype(int)
-    if "day" in out and out["day"].notna().any():
-        out["target_date"] = pd.to_datetime(out["day"], errors="coerce")
+
+    # hard guarantee: derive name if it slipped through
+    if "name" not in out.columns:
+        # try common variants or raise a clear error
+        for alt in ("player_name", "PLAYER", "Player", "Name"):
+            if alt in df.columns:
+                out["name"] = df[alt]
+                break
+        if "name" not in out.columns:
+            raise SystemExit("projections_to_rows: missing 'name' after renaming. Check source columns.")
+
+    # Home/Away flag (safe)
+    if "home_away" in out.columns:
+        out["HomeOrAway_bool"] = (out["home_away"].astype(str).str.upper().eq("HOME")).astype(int)
     else:
-        out["target_date"] = pd.to_datetime(out["datetime"], errors="coerce")
+        out["HomeOrAway_bool"] = np.nan
+
+    # target_date
+    out["target_date"] = pd.to_datetime(
+        out["day"] if ("day" in out and out["day"].notna().any()) else out.get("datetime"),
+        errors="coerce"
+    )
     return out
+
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -352,9 +374,12 @@ def main():
         proj_raw = fetch_projections(mon_date, args.key)
 
     proj = projections_to_rows(proj_raw)
-    if args.team_filter is not None and "Team" in proj_raw.columns:
-        proj = proj[proj["team"].astype(str).str.upper() == args.team_filter.upper()].copy()
+    
+    #if args.team_filter is not None and "Team" in proj_raw.columns: 
 
+    if args.team_filter and "team" in proj.columns:
+        proj = proj[proj["team"].astype(str).str.upper() == args.team_filter.upper()].copy()
+        
     names_in_hist = set(hist_df["name"].unique().tolist())
     missing_rows = proj[~proj["name"].isin(names_in_hist)].copy()
     if args.diagnostics_csv:
