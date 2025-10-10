@@ -1,6 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # train_flexi_forecast.py
 import argparse, pandas as pd
-import yaml
+from yaml import Yaml
 from trainer import GenericTrainer
 
 
@@ -15,14 +18,7 @@ p.add_argument("--epochs", required=True)
 args = p.parse_args()
 
 def load_weighted_union( csv_ytd: str | None, csv_last: str | None, last_weight: float, season_col: str | None):
-    if csv and (csv_ytd or csv_last):
-        raise SystemExit("Use either --csv OR (--csv_ytd and/or --csv_last), not both.")
-    if csv:
-        df, feat_cols = prepare_data(csv, lag_k=3, season_col=season_col)
-        df["row_weight"] = 1.0
-        return df, feat_cols
-    if not csv_ytd and not csv_last:
-        raise SystemExit("Provide --csv or at least one of --csv_ytd / --csv_last.")
+
     frames = []
     feat_cols_ref = None
     if csv_ytd:
