@@ -1,4 +1,4 @@
-name,team,opponent,home_or_away,date,points
+GameId,Team,Opponent,PlayerId,Name,MatchDate,Minutes,Points,Goals,Assists,HomeOrAway,GapInDays
 Teuvo Teravainen,CHI,FLA,0,2025-10-07,2.0
 Frank Nazar,CHI,FLA,0,2025-10-07,2.0
 Tyler Bertuzzi,CHI,FLA,0,2025-10-07,2.0
