@@ -182,7 +182,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+          git add preds/*.csv models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -209,6 +209,7 @@ jobs:
           subject: "WhiteShorts: Forecast complete for ${{ steps.when.outputs.predict_date }}"
           to: ${{ secrets.NOTIFY_TO_EMAIL }}
           from: ${{ secrets.NOTIFY_FROM_EMAIL }}
+          atttachment: out_csv
          # content_type: text/plain
           body: |
             Forecast completed.
