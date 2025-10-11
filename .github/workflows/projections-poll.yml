@@ -158,7 +158,7 @@ jobs:
        #   fi
 
       - name: Train (quick RF refresh)
-        if: steps.when.outputs.in_window == '1'
+        #if: steps.when.outputs.in_window == '1'
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
@@ -169,7 +169,7 @@ jobs:
   #        python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Points"
           #             --task "Goals"             --task "Points"
       - name: Commit Training Artifacts
-        if: steps.when.outputs.in_window == '1'
+       # if: steps.when.outputs.in_window == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -190,7 +190,7 @@ jobs:
           python batch_predict_by_player.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --head_to_head models/v3.3/per_player_head_to_head.csv             --rf_model models/v3.3/rf_points_forecaster.pkl             --dss_model models/v3.3/dss_model.pt             --date "${DATE_MON}"             --key "${SPORTSDATA_API_KEY}"             --out_csv preds/preds_${DATE_MON}.csv             --diagnostics_csv preds/missing_${DATE_MON}.csv
 
       - name: Commit prediction artifacts
-        if: steps.when.outputs.in_window == '1'
+    #    if: steps.when.outputs.in_window == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
