@@ -168,7 +168,19 @@ jobs:
  #         python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"
   #        python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Points"
           #             --task "Goals"             --task "Points"
-
+      - name: Commit Training Artifacts
+        if: steps.when.outputs.in_window == '1'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch
+          git pull
+          git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git push origin goal_assist_and_metrics_upgrade
+          fi
       - name: Predict with projections
        # if: steps.when.outputs.in_window == '1'
         env:
@@ -182,7 +194,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add preds/*.csv models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+          git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
