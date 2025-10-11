@@ -487,12 +487,12 @@ def main():
     hh = hh[["name","n_test_rf","mae_rf","n_test_dss","mae_dss","delta_rf_minus_dss","winner"]]
     hh.to_csv(os.path.join(args.out_dir, "per_player_head_to_head.csv"), index=False)
 
-    print("\n=== Overall comparison (MAE) ===")
-    print(summary.to_string(index=False))
-    if os.path.exists(os.path.join(args.out_dir, "overall_by_season.csv")):
-        print("\n=== Season-wise overall MAE ===")
-        print(pd.read_csv(os.path.join(args.out_dir, "overall_by_season.csv")).to_string(index=False))
-    print(f"\nArtifacts in: {args.out_dir}")
+    #print("\n=== Overall comparison (MAE) ===")
+    #print(summary.to_string(index=False))
+    #if os.path.exists(os.path.join(args.out_dir, "overall_by_season.csv")):
+    #    print("\n=== Season-wise overall MAE ===")
+    #    print(pd.read_csv(os.path.join(args.out_dir, "overall_by_season.csv")).to_string(index=False))
+    #print(f"\nArtifacts in: {args.out_dir}")
 
 if __name__ == "__main__":
     main()
