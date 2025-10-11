@@ -173,7 +173,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch
+          #git fetch
           git pull
           git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
@@ -194,7 +194,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch
+          # git fetch
           git pull
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
@@ -210,7 +210,7 @@ jobs:
             git config user.email "github-actions@users.noreply.github.com"
             git add whiteshorts.db || true
             git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
-            git push
+           # git push
       - name: Email completion (success)
         #: steps.when.outputs.in_window == '1'
         uses: dawidd6/action-send-mail@v3
