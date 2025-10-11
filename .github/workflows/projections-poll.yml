@@ -105,7 +105,7 @@ jobs:
             --history_csv data/NHL_YTD.csv \
             --since_days 2 \
             --key "${SPORTSDATA_API_KEY}"
-          python update_history_from_api.py --history_csv data/NHL_2023_24.csv --since_days 380 --key "3cafb838ee6d41d7afc0ec33174884a2"
+         # python update_history_from_api.py --history_csv data/NHL_2023_24.csv --since_days 380 --key "3cafb838ee6d41d7afc0ec33174884a2"
       
       # --- 2) Check projections availability
       - name: Check projections availability
@@ -148,14 +148,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "gareth.reid123@gmail.com"
     
-          git add data/NHL_YTD.csv data/NHL_2023_24.csv preds/*.csv models/v3.3/* || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-            git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
-            git push origin goal_assist_and_metrics_upgrade
-          fi
+       #   git add data/NHL_YTD.csv data/NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+        #  if git diff --cached --quiet; then
+         #   echo "No changes to commit."
+        #  else
+          #  TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+           # git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+            #git push origin goal_assist_and_metrics_upgrade
+       #   fi
 
       - name: Train (quick RF refresh)
         if: steps.when.outputs.in_window == '1'
