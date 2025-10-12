@@ -37,11 +37,9 @@ jobs:
           git add access_test.txt || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
        
           git commit -m "Repo Access Test"
-          if git diff --cached --quiet; then
-            echo "UNEXPECTED GIT ACCESS TEST"
-          else
-            git push origin goal_assist_and_metrics_upgrade
-          fi
+          
+          git push origin goal_assist_and_metrics_upgrade
+          
       - name: Install project
         run: |
           python -m pip install --upgrade pip
