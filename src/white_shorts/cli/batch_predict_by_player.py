@@ -160,8 +160,8 @@ def build_top_teammate_features(df: pd.DataFrame, top_k:int=3):
     return df, feat_cols
 
 def _feature_engineer_from_raw(raw_df: pd.DataFrame, lag_k=3):
-    df,cm = raw_df.copy()
-    #cm = normalize_cols(df.columns.tolist())
+    df = raw_df.copy()
+    cm = df.columns.tolist()#normalize_cols(df.columns.tolist())
     
     for req in ["name","points","home_or_away"]:
         if req not in cm:
