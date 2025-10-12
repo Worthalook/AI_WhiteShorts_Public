@@ -318,8 +318,8 @@ def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
             raise SystemExit("projections_to_rows: missing 'name' after renaming. Check source columns.")
 
     # Home/Away flag (safe)
-    if "home_away" in out.columns:
-        out["HomeOrAway_bool"] = (out["home_away"].astype(str).str.upper().eq("HOME")).astype(int)
+    if "home_or_away" in out.columns:
+        out["HomeOrAway_bool"] = (out["home_or_away"].astype(str).str.upper().eq("HOME")).astype(int)
     else:
         out["HomeOrAway_bool"] = np.nan
 
