@@ -393,7 +393,10 @@ def main():
         name = pr.get("name", "")
         if name not in names_in_hist:
             continue
-        hoa_flag = int(pr.get("HomeOrAway_bool", 0))
+        hoa_flag = 1
+        try: int(pr.get("HomeOrAway_bool", 0))
+        except: pass    
+            
         opponent = pr.get("opponent", None)
         next_date = pr.get("target_date", pd.NaT)
 
