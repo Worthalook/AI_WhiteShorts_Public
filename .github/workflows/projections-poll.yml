@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
-          URL=https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/2025-Oct-11?key=3cafb838ee6d41d7afc0ec33174884a2#"${BASE}/${PREDICT_DATE}?key=${SPORTSDATA_API_KEY}"
+          URL=https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/2025-Oct-11?key=3cafb838ee6d41d7afc0ec33174884a2#"${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
           echo "Probing projections: ${URL}"
           HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
       
