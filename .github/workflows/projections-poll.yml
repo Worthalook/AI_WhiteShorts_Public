@@ -18,6 +18,21 @@ jobs:
   poll-and-predict:
     runs-on: ubuntu-latest
     steps:
+      - name: Check bot CAN commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch
+          #git pull
+          echo "Repo Access Test = PASSED" >> access_test.txt
+          git add access_test.txt || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+       
+          git commit -m "Repo Access Test"
+          if git diff --cached --quiet; then
+            echo "UNEXPECTED GIT ACCESS TEST"
+          else
+            git push origin goal_assist_and_metrics_upgrade
+          fi
       - name: Checkout goal_assist_and_metrics_upgrade
         uses: actions/checkout@v4
         with:
@@ -153,7 +168,7 @@ jobs:
          #   echo "No changes to commit."
         #  else
           #  TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-           # git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+           # vg
             #git push origin goal_assist_and_metrics_upgrade
        #   fi
 
@@ -202,7 +217,7 @@ jobs:
           else
             TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
-            git push origin goal_assist_and_metrics_upgrade
+          #  git push origin goal_assist_and_metrics_upgrade
           fi
       - name: Commit updated DB
         run: |
