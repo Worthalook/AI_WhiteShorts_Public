@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
-          URL=https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/2025-Oct-11?key=3cafb838ee6d41d7afc0ec33174884a2#"${BASE}/2025-OCT-11?key=${SPORTSDATA_API_KEY}"
+          URL=https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/2025-Oct-11?key=3cafb838ee6d41d7afc0ec33174884a2#"${BASE}/${PREDICT_DATE}?key=${SPORTSDATA_API_KEY}"
           echo "Probing projections: ${URL}"
           HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
       
@@ -173,8 +173,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          #git fetch
-          git pull
+          git fetch
+          #git pull
           git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
@@ -194,8 +194,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # git fetch
-          git pull
+          git fetch
+          # git pull
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           if git diff --cached --quiet; then
             echo "No changes to commit."

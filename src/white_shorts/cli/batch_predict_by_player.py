@@ -160,19 +160,21 @@ def build_top_teammate_features(df: pd.DataFrame, top_k:int=3):
     return df, feat_cols
 
 def _feature_engineer_from_raw(raw_df: pd.DataFrame, lag_k=3):
-    df = raw_df.copy()
-    cm = normalize_cols(df.columns.tolist())
+    df,cm = raw_df.copy()
+    #cm = normalize_cols(df.columns.tolist())
+    
     for req in ["name","points","home_or_away"]:
         if req not in cm:
             raise SystemExit(f"CSV missing required column '{req}'. Found: {list(df.columns)}")
-    df = df.rename(columns={
-        cm["name"]:"name",
-        cm["points"]:"points",
-        cm["home_or_away"]:"home_or_away",
-        **({cm["team"]:"team"} if "team" in cm else {}),
-        **({cm["opponent"]:"opponent"} if "opponent" in cm else {}),
-        **({cm["date"]:"date"} if "date" in cm else {})
-    })
+    #df = df.rename(columns={
+   #     cm["name"]:"name",
+    #    cm["points"]:"points",
+   ##     cm["home_or_away"]:"home_or_away",
+    ##    **({cm["team"]:"team"} if "team" in cm else {}),
+    #    **({cm["opponent"]:"opponent"} if "opponent" in cm else {}),
+    #    **({cm["date"]:"date"} if "date" in cm else {})
+    #})
+    
     df["home_or_away"] = df["home_or_away"].apply(to_home_flag).astype(float)
     if "date" in df.columns:
         df["parsed_date"] = df["date"].apply(try_parse_date)
