@@ -3,6 +3,8 @@ from pathlib import Path
 import json, numpy as np
 from typing import Dict, Any
 from registry import TASKS
+import lightgbm as lgb
+import joblib
 
 class GenericTrainer:
     def __init__(self, task_name: str, cfg: Dict[str, Any]):
@@ -26,7 +28,7 @@ class GenericTrainer:
 
     def _train_single_model(self, X, y):
         # use your preferred lib; here's LightGBM pseudocode
-        import lightgbm as lgb
+        
         params = dict(self.cfg["lgbm_params"])
         params["objective"] = self.spec.objective
         dtrain = lgb.Dataset(X, label=y)
@@ -54,7 +56,6 @@ class GenericTrainer:
 
     def _train_two_stage(self, X, y):
         # Stage 1: classifier P(y>0)
-        import lightgbm as lgb
         y_pos = (y > 0).astype(int)
         clf = lgb.LGBMClassifier(**self.cfg["clf_params"])
         clf.fit(X, y_pos)
@@ -82,13 +83,12 @@ class GenericTrainer:
         # returns expected count predictions
         X, _ = self.make_dataset(df)
         if self.spec.two_stage:
-            import joblib
+           
             bundle = joblib.load(self.model_path)
             p_pos = bundle["clf"].predict_proba(X)[:, 1]
             mu = bundle["reg"].predict(X)  # expected conditional count (given >0)
             yhat = p_pos * np.maximum(mu, 0.0)
         else:
-            import lightgbm as lgb
             booster = lgb.Booster(model_file=str(self.model_path))
             yhat = booster.predict(X)
         if self.spec.output_transform:
