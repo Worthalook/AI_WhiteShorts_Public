@@ -236,19 +236,19 @@ jobs:
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
-             server_address: ${{ secrets.SMTP_SERVER }}
-             server_port: ${{ secrets.SMTP_PORT }}
-             secure: true
-             username: ${{ secrets.SMTP_USERNAME }}
-             password: ${{ secrets.SMTP_PASSWORD }}
-             subject: >
-               WhiteShorts Projections – ${{ env.DATE_MON }} – 
-               ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
-               to: ${{ secrets.NOTIFY_TO_EMAIL }}
-               from: "WhiteShorts Bot <${{ secrets.NOTIFY_FROM_EMAIL }}>"
-               body: |
-                 Workflow status: ${{ job.status }}
-                 Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-                 # ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
-        
-             attachments: "preds/preds_2025-Oct-13.csv"
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: >
+            WhiteShorts Projections – ${{ steps.when.outputs.predict_date }} –
+            ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+          to: ${{ secrets.NOTIFY_TO_EMAIL }}
+          from: "WhiteShorts Bot <${{ secrets.NOTIFY_FROM_EMAIL }}>"
+          body: |
+            Workflow status: ${{ job.status }}
+            Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.' }}
+          attachments: "preds/preds_${{ steps.when.outputs.predict_date }}.csv"
+
