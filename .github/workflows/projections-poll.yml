@@ -194,8 +194,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           #git fetch
-          git pull
-          git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
+          #git pull
+          #git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
           #if git diff --cached --quiet; then
           #  echo "No changes to commit."
           #else
@@ -217,7 +217,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        
+          git pull
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
         
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
