@@ -1,12 +1,12 @@
 name: projections-poll-and-predict
 on:
-  #push:
-   # branches: [ "main" ]
-
-   schedule:
+  push:
+    branches: [ "" ]
+ttt
+   # schedule:
     #### Every 30 minutes
-    - cron: "*/30 * * * *"
-   workflow_dispatch: {}
+#    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
