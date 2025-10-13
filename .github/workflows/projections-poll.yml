@@ -65,7 +65,7 @@ jobs:
           fi
           echo "in_window=$IN_WINDOW" >> $GITHUB_OUTPUT
 
-          if [ "$HOUR" -le 2 ]; then
+          if [ "$HOUR" -le 17 ]; then #games playing today
             PREDICT_DATE=$(TZ=$TZ date -d "yesterday" +%Y-%b-%d)
           else
             PREDICT_DATE=$(TZ=$TZ date +%Y-%b-%d)
@@ -148,7 +148,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
-          URL="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
+          URL="${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
           echo "Probing projections: ${URL}"
           HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
       
