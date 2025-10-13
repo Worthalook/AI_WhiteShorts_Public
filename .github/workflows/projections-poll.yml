@@ -1,12 +1,12 @@
 name: projections-poll-and-predict
 on:
-  #push:
-   # branches: [ "goal_assist_and_metrics_upgrade" ]
+  push:
+    branches: [ "goal_assist_and_metrics_upgrade" ]
 
-   schedule:
+   #schedule:
     #### Every 30 minutes
-    - cron: "*/30 * * * *"
-   workflow_dispatch: {}
+    # - cron: "*/30 * * * *"
+  workflow_dispatch: {}
 
 permissions:
   contents: write
