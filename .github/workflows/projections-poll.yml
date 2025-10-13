@@ -249,7 +249,6 @@ jobs:
              body: |
                Workflow status: ${{ job.status }}
                Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-               ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
+               # ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
         
-             attachments: preds/preds_2025-Oct-13.csv
-
+             attachments: "preds/preds_2025-Oct-13.csv"
