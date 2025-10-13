@@ -206,7 +206,7 @@ jobs:
        # if: steps.when.outputs.in_window == '1'
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
-          DATE_MON: ${{ steps.when.outputs.predict_date }}
+          DATE_MON: '2025-Oct-12' #${{ steps.when.outputs.predict_date }}
         run: |
           python batch_predict_by_player.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --head_to_head models/v3.3/per_player_head_to_head.csv             --rf_model models/v3.3/rf_points_forecaster.pkl             --dss_model models/v3.3/dss_model.pt             --date "${DATE_MON}"             --key "${SPORTSDATA_API_KEY}"             --out_csv preds/preds_${DATE_MON}.csv             --diagnostics_csv preds/missing_${DATE_MON}.csv
 
