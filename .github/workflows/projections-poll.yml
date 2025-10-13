@@ -1,12 +1,13 @@
 name: projections-poll-and-predict
 on:
-  #push:
-   # branches: [ "main" ]
+  push:
+    branches: [ "main" ]
 
-   schedule:
+  # schedule:
     #### Every 30 minutes
-    - cron: "*/30 * * * *"
-   workflow_dispatch: {}
+ #   - cron: "*/30 * * * *"
+   
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -98,7 +99,7 @@ jobs:
 
 
       - name: '*****Ensure dirs and history file*****************************************'
-        if: steps.when.outputs.in_window == '1'
+       # if: steps.when.outputs.in_window == '1'
         run: |
           mkdir -p data models/v3.3 preds
           if [ ! -f data/NHL_HISTORY_UNION.csv ]; then
