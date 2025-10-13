@@ -242,13 +242,13 @@ jobs:
              username: ${{ secrets.SMTP_USERNAME }}
              password: ${{ secrets.SMTP_PASSWORD }}
              subject: >
-              WhiteShorts Projections – ${{ env.DATE_MON }} – 
-              ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
-             to: ${{ secrets.NOTIFY_TO_EMAIL }}
-             from: "WhiteShorts Bot <${{ secrets.NOTIFY_FROM_EMAIL }}>"
-             body: |
-               Workflow status: ${{ job.status }}
-               Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-               # ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
+               WhiteShorts Projections – ${{ env.DATE_MON }} – 
+               ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+               to: ${{ secrets.NOTIFY_TO_EMAIL }}
+               from: "WhiteShorts Bot <${{ secrets.NOTIFY_FROM_EMAIL }}>"
+               body: |
+                 Workflow status: ${{ job.status }}
+                 Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                 # ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
         
              attachments: "preds/preds_2025-Oct-13.csv"
