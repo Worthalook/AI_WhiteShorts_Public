@@ -118,10 +118,10 @@ jobs:
             echo "SPORTSDATA_API_KEY secret missing"
             exit 1
           fi
-          python -m white_shorts.etl.update_history_from_api \
-            --history_csv data/NHL_YTD.csv \
-            --since_days 2 \
-            --key "${SPORTSDATA_API_KEY}"
+          #python -m white_shorts.etl.update_history_from_api \
+          #  --history_csv data/NHL_YTD.csv \
+          #  --since_days 2 \
+          #  --key "${SPORTSDATA_API_KEY}"
 
 
       - name: '*****Update (checkin) Results*************************'
