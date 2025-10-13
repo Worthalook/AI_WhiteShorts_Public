@@ -18,7 +18,7 @@ jobs:
   poll-and-predict:
     runs-on: ubuntu-latest
     steps:
-      - name: '*************************Checkout goal_assist_and_metrics_upgrade*************************'
+      - name: '*****Checkout goal_assist_and_metrics_upgrade*************************'
         uses: actions/checkout@v4
         with:
           ref: goal_assist_and_metrics_upgrade
@@ -29,7 +29,7 @@ jobs:
           python-version: "3.10"
 
 
-      - name: '*************************Check bot CAN commit*************************'
+      - name: '*****Check bot CAN commit*************************'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -43,12 +43,12 @@ jobs:
           git push origin goal_assist_and_metrics_upgrade
           
 
-      - name: '*************************Install project*************************'
+      - name: '*****Install project*************************'
         run: |
           python -m pip install --upgrade pip
           pip install -e .
 
-      - name: '*************************Compute Melbourne-time window and PREDICT_DATE*************************'
+      - name: '*****Compute Melbourne-time window and PREDICT_DATE*************************'
         id: when
         run: |
           HOUR=$(TZ=$TZ date +%H)
@@ -91,13 +91,13 @@ jobs:
 
       
 
-      - name: '*************************Skip if outside window*************************'
+      - name: '*****Skip if outside window*************************'
         if: steps.when.outputs.in_window != '1'
         run: |
           echo "Outside 19:00–02:59 $TZ window. Skipping."
 
 
-      - name: '*************************Ensure dirs and history file*****************************************'
+      - name: '*****Ensure dirs and history file*****************************************'
         if: steps.when.outputs.in_window == '1'
         run: |
           mkdir -p data models/v3.3 preds
@@ -106,7 +106,7 @@ jobs:
           fi
 
       # --- 1) Update history (FINAL results, last 2 days)
-      - name: '*************************Update history (FINAL results, last 2 days)*************************'
+      - name: '*****Update history (FINAL results, last 2 days)*************************'
         #if: ${{ steps.when.outputs.in_window == '1' }}
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
@@ -123,21 +123,21 @@ jobs:
             --key "${SPORTSDATA_API_KEY}"
 
 
-      - name: '*************************Update (checkin) Results*************************'
+      - name: '*****Update (checkin) Results*************************'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "gareth.reid123@gmail.com"
     
-          git add data/NHL_YTD.csv  || true
-          git commit -m "Projections job: history ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+          git add data/NHL_YTD.csv || true
+          #git commit -m "Projections job: history ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
        
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           git push origin goal_assist_and_metrics_upgrade
 
 
       # --- 2) Check projections availability
-      - name: '*************************Check projections availability*************************'
+      - name: '*****Check projections availability*************************'
         if: ${{ steps.when.outputs.in_window == '1' }}
         id: probe
         env:
@@ -167,14 +167,14 @@ jobs:
       
 
       # --- 3) Exit early if projections not ready
-      - name: '*************************Exit early if projections not ready (count < 10)*************************'
+      - name: '*****Exit early if projections not ready (count < 10)*************************'
         if: ${{ steps.probe.outputs.count == '' || steps.probe.outputs.count == '0' || fromJSON(steps.probe.outputs.count) < 10 }}
         shell: bash
         run: |
           echo "Projections not ready (or too few). Will check again next run."
      
 
-      - name: '*************************Train (quick RF refresh)*************************'
+      - name: '*****Train (quick RF refresh)*************************'
         #if: steps.when.outputs.in_window == '1'
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
@@ -187,7 +187,7 @@ jobs:
           #             --task "Goals"             --task "Points"
       
           
-      - name: '*************************Commit Training Artifacts*************************'
+      - name: '*****Commit Training Artifacts*************************'
        # if: steps.when.outputs.in_window == '1'
         run: |
           git config user.name "github-actions[bot]"
@@ -202,7 +202,7 @@ jobs:
           #fi
 
 
-      - name: '*************************Predict with projections*************************'
+      - name: '*****Predict with projections*************************'
        # if: steps.when.outputs.in_window == '1'
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
@@ -211,7 +211,7 @@ jobs:
           python batch_predict_by_player.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --head_to_head models/v3.3/per_player_head_to_head.csv             --rf_model models/v3.3/rf_points_forecaster.pkl             --dss_model models/v3.3/dss_model.pt             --date "${DATE_MON}"             --key "${SPORTSDATA_API_KEY}"             --out_csv preds/preds_${DATE_MON}.csv             --diagnostics_csv preds/missing_${DATE_MON}.csv
 
 
-      - name:  '*************************Commit prediction artifacts*************************'
+      - name:  '*****Commit prediction artifacts*************************'
     #    if: steps.when.outputs.in_window == '1'
         run: |
           git config user.name "github-actions[bot]"
@@ -220,10 +220,10 @@ jobs:
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
         
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+          #git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
           git push origin goal_assist_and_metrics_upgrade
       
-      - name:  '*************************Commit updated DB*************************'
+      - name:  '*****Commit updated DB*************************'
         run: |
             #git config user.name "github-actions"
             #git config user.email "github-actions@users.noreply.github.com"
@@ -232,7 +232,7 @@ jobs:
            # git push
 
 
-      - name: '*************************Email completion (success)*****************************'
+      - name: '*****Email completion (success)*****************************'
         #: steps.when.outputs.in_window == '1'
         uses: dawidd6/action-send-mail@v3
         with:
