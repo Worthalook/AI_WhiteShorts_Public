@@ -188,11 +188,11 @@ jobs:
           #git fetch
           #git pull
           git add models/v3.3/* || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git push origin goal_assist_and_metrics_upgrade
-          fi
+          #if git diff --cached --quiet; then
+          #  echo "No changes to commit."
+          #else
+          git push origin goal_assist_and_metrics_upgrade
+          #fi
       - name: Predict with projections
        # if: steps.when.outputs.in_window == '1'
         env:
@@ -209,13 +209,13 @@ jobs:
           #git fetch
           # git pull
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
+          #if git diff --cached --quiet; then
+          #  echo "No changes to commit."
+          #else
             TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
             git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
-          #  git push origin goal_assist_and_metrics_upgrade
-          fi
+            git push origin goal_assist_and_metrics_upgrade
+          #fi
       - name: Commit updated DB
         run: |
             git config user.name "github-actions"
