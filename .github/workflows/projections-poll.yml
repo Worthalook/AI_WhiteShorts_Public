@@ -244,7 +244,10 @@ jobs:
           subject: "WhiteShorts: Forecast complete for ${{ steps.when.outputs.predict_date }}"
           to: ${{ secrets.NOTIFY_TO_EMAIL }}
           from: ${{ secrets.NOTIFY_FROM_EMAIL }}
-          #atttachments: out_csv
+          attachments: |
+             preds/preds_${{ env.DATE_MON }}.csv
+             #logs/log_${{ env.DATE_MON }}.txt
+
          # content_type: text/plain
           body: |
             Forecast completed.
