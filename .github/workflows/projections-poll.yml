@@ -33,8 +33,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch
-          #git pull
+          #git fetch
+          git pull
           echo "Repo Access Test = PASSED" >> access_test.txt
           git add access_test.txt || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
        
@@ -59,7 +59,7 @@ jobs:
           # - Before midnight (19:00–23:59): forecast for *current* Melbourne date
           # - After midnight  (00:00–02:59): forecast for *(current Melbourne date - 1 day)*
           IN_WINDOW=0
-          if [ "$HOUR" -ge 19 ] || [ "$HOUR" -le 2 ]; then
+          if [ "$HOUR" -ge 17 ] || [ "$HOUR" -le 2 ]; then
             IN_WINDOW=1
           fi
           echo "in_window=$IN_WINDOW" >> $GITHUB_OUTPUT
