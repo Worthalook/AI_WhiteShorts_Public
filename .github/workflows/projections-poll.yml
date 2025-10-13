@@ -1,8 +1,8 @@
 name: projections-poll-and-predict
 on:
   push:
-    branches: [ "" ]
-ttt
+    branches: [ "add_assists_goals_trainer-predictor" ]
+
    # schedule:
     #### Every 30 minutes
 #    - cron: "*/30 * * * *"
