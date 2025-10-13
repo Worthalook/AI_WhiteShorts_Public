@@ -11,6 +11,12 @@
     "team_prev_std_pts",
     "player_vs_opp_avg",
     "team_vs_opp_last_mean",
-    "opp_days_since_last_meeting"
+    "opp_days_since_last_meeting",
+    "tm1_prev_points",
+    "tm1_days_since_played",
+    "tm2_prev_points",
+    "tm2_days_since_played",
+    "tm3_prev_points",
+    "tm3_days_since_played"
   ]
 }
