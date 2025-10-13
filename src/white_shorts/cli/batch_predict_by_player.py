@@ -166,28 +166,10 @@ def _feature_engineer_from_raw(raw_df: pd.DataFrame, lag_k=3):
     for req in ["name","points","home_or_away"]:
         if req not in cm:
             raise SystemExit(f"CSV missing required column '{req}'. Found: {list(df.columns)}")
-    df = df.rename(columns={
-        cm["name"]:"name",
-        cm["points"]:"points",
-        cm["home_or_away"]:"home_or_away",
-        cm["date"]:"date",
-        cm["minutes"]:"minutes",
-        cm["goals"]:"goals",
-        cm["assists"]:"assists",
-        cm["is_over"]:"is_over",
-        cm["updated_ts"]:"updated_ts",
-        cm["player_id"]:"player_id",
-        cm["game_id"]:"game_id",
-        cm["goal_tending_goals_against"]:"goal_tending_goals_against",
-        cm["power_play_goals"]:"power_play_goals",
-        cm["power_play_assists"]:"power_play_assists",
-        cm["shots_on_goal"]:"shots_on_goal",
-        **({cm["team"]:"team"} if "team" in cm else {}),
-        **({cm["opponent"]:"opponent"} if "opponent" in cm else {}),
-        **({cm["date"]:"date"} if "date" in cm else {})
-    })
+   
+   
     
-    if "name" in df.columns:
+    if "name" not in df.columns:
         print(f"Diagnostics (name col missing): Found: {list(df.columns)})")
         raise SystemExit(f"name column not found. Found: {list(df.columns)}")
 
