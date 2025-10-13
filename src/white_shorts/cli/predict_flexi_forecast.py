@@ -10,8 +10,7 @@ import numpy as np
 import pandas as pd
 import typer
 
-app = typer.Typer(help="Predictor for models trained by train_flexi_forecast.py")
-
+app = typer.Typer(help="Predictor for models trained by train_flexi_forecast.py (CSV or API projections).")
 
 # ------------------------------- utils --------------------------------------- #
 
@@ -77,7 +76,6 @@ def _find_model(model_dir: Path, task_lower: str) -> Path:
     cands = list(model_dir.glob("*.pkl"))
     cands_task = [p for p in cands if task_lower in p.name.lower()]
     if cands_task:
-        # pick the shortest name (usually the canonical one)
         return sorted(cands_task, key=lambda x: len(x.name))[0]
 
     if len(cands) == 1:
@@ -135,33 +133,124 @@ def _predict_df(model, X: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out)
 
 
+# ------------------------- projections (API) -------------------------------- #
+
+def _fetch_projections_via_import(date_str: str, api_key: str) -> Optional[pd.DataFrame]:
+    """
+    Try to reuse your existing implementation from:
+      white_shorts.cli.batch_predict_by_player.fetch_projections
+    """
+    try:
+        from white_shorts.cli.batch_predict_by_player import fetch_projections  # type: ignore
+        df = fetch_projections(date_str, api_key)
+        if isinstance(df, pd.DataFrame) and not df.empty:
+            return df
+    except Exception:
+        pass
+    return None
+
+
+def _fetch_projections_direct(date_str: str, api_key: str) -> pd.DataFrame:
+    """
+    Minimal, dependency-light fallback to hit the same SportsData.io endpoint
+    used in the legacy script.
+    """
+    import urllib.request
+    import ssl
+
+    base = "https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
+    url = f"{base}/{date_str}?key={api_key}"
+
+    # SportsData uses TLS; create permissive context for GHA runners if needed.
+    ctx = ssl.create_default_context()
+
+    with urllib.request.urlopen(url, context=ctx, timeout=30) as resp:
+        raw = resp.read().decode("utf-8", errors="ignore")
+        data = json.loads(raw)
+
+    # Expect a list of dicts
+    if not isinstance(data, list):
+        return pd.DataFrame()
+
+    df = pd.DataFrame(data)
+
+    # Light normalization: keep common identifiers if present
+    # (Your existing fetch_projections likely does richer shaping; we keep it minimal here.)
+    # Downstream feature selection will pick numeric columns anyway.
+    # Ensure 'date' column exists for ID join semantics
+    if "Day" in df.columns and "DateTime" not in df.columns:
+        # Older payloads sometimes use 'Day' for the date
+        df["date"] = pd.to_datetime(df["Day"]).dt.date.astype(str)
+    elif "DateTime" in df.columns:
+        df["date"] = pd.to_datetime(df["DateTime"]).dt.date.astype(str)
+    else:
+        df["date"] = date_str
+
+    # Best-effort rename to match your ID columns if available
+    rename_map = {
+        "Name": "name",
+        "Team": "team",
+        "Opponent": "opponent",
+        "GameID": "game_id",
+        "GameId": "game_id",
+        "PlayerID": "player_id",
+    }
+    existing = {k: v for k, v in rename_map.items() if k in df.columns}
+    if existing:
+        df = df.rename(columns=existing)
+
+    return df
+
+
+def _load_projections(date_str: str, api_key: str) -> pd.DataFrame:
+    """
+    First try your project's fetch_projections(); if not available, fallback.
+    """
+    df = _fetch_projections_via_import(date_str, api_key)
+    if df is None:
+        df = _fetch_projections_direct(date_str, api_key)
+    return df
+
+
 # ------------------------------- CLI ---------------------------------------- #
 
 @app.command()
 def run(
-    csv_features: Path = typer.Argument(..., help="Feature table for the next games (CSV or JSON)."),
+    csv_features: Optional[Path] = typer.Argument(None, help="Feature table (CSV/JSON). If omitted and --date/--key provided, will fetch projections from API."),
     out_csv: Path = typer.Option(Path("predictions.csv"), "--out_csv", "-o", help="Output CSV path."),
     model_dir: Path = typer.Option(..., "--model_dir", "-m", help="Directory produced by train_flexi_forecast.py (contains model .pkl)."),
     task: str = typer.Option("Points", "--task", "-t", help="Task used during training, e.g., 'Goals', 'Assists', or 'Points'."),
     features: Optional[str] = typer.Option(None, "--features", "-f", help="Comma-separated list OR path to a JSON/CSV list of feature names."),
     id_cols: Optional[str] = typer.Option(None, "--id_cols", help="Optional comma list of identifier columns to preserve in output."),
+    date: Optional[str] = typer.Option(None, "--date", "-d", help="Projection date for API (e.g., 2025-Oct-13 or 2025-10-13). If provided with --key, will fetch from API."),
+    key: Optional[str] = typer.Option(None, "--key", "-k", help="SportsData.io API key, required when using --date."),
 ):
     """
     Predict using a model trained by train_flexi_forecast.py.
-    - It will look for model_{task_lower}.pkl inside --model_dir by default.
-    - If a features_{task}.json is present, it will use that exact feature set.
-    - Otherwise, it infers numeric features (excluding label-like columns).
-    Output columns: [id cols...] + prediction (+ optional proba_1, pred_std).
+
+    Input options:
+      - CSV/JSON features file (pass as first positional arg), OR
+      - API projections via --date and --key.
+
+    Model artifacts:
+      - Will look for model_{task_lower}.pkl inside --model_dir (with fallbacks).
+
+    Output columns:
+      [id cols...] + prediction (+ optional proba_1, pred_std).
     """
     task_lower = task.strip().lower()
 
-    # Load inputs
-    df_in = _read_table(csv_features)
+    # -------------------- Load inputs: CSV or API -------------------- #
+    if date and key:
+        df_in = _load_projections(date, key)
+        if df_in.empty:
+            raise typer.Exit(code=2)
+    else:
+        if csv_features is None:
+            raise typer.BadParameter("Provide a features file OR use --date and --key to fetch from API.")
+        df_in = _read_table(csv_features)
 
-    # Feature selection priority:
-    #   1) explicit --features file/list
-    #   2) features_{task}.json or features.json in model_dir
-    #   3) heuristic (numeric non-label columns)
+    # -------------------- Feature selection -------------------------- #
     explicit_features: Optional[List[str]] = None
     if features:
         p = Path(features)
@@ -180,22 +269,20 @@ def run(
 
     X = _infer_features(df_in, feat_list)
 
-    # Load model
+    # -------------------- Load model & predict ----------------------- #
     model_path = _find_model(model_dir, task_lower)
     model = _load_pickle(model_path)
-
-    # Predict
     df_pred = _predict_df(model, X)
 
-    # Build output
+    # -------------------- Build & save output ------------------------ #
     id_list = [c.strip() for c in id_cols.split(",")] if id_cols else None
     ids = _keep_id_cols(df_in, id_list)
     out = pd.concat([ids.reset_index(drop=True), df_pred.reset_index(drop=True)], axis=1)
 
-    # Save
     _ensure_parent(out_csv)
     out.to_csv(out_csv, index=False)
-    typer.echo(f"[flexi-predict] task={task} | model={model_path.name} → {out_csv}")
+    src = "API" if (date and key) else str(csv_features)
+    typer.echo(f"[flexi-predict] task={task} | model={model_path.name} | src={src} → {out_csv}")
 
 
 if __name__ == "__main__":

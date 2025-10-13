@@ -192,7 +192,7 @@ jobs:
       
           
       - name: '*****Commit Training Artifacts*************************'
-        if: steps.when.outputs.in_window == '1'
+       # if: steps.when.outputs.in_window == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -205,8 +205,49 @@ jobs:
           #git push origin add_assists_goals_trainer-predictor
           #fi
 
+      - name: '*****Predict GOALS (API)*************************'
+        #if: steps.when.outputs.in_window == '1'
+        env:
+            SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+            DATE_MON: ${{ steps.when.outputs.predict_date }}
+        run: |
+            python -m white_shorts.cli.predict_flexi_forecast \
+            --model_dir models/v3.3 \
+            --task "Goals" \
+            --date "${DATE_MON}" \
+            --key "${SPORTSDATA_API_KEY}" \
+            --out_csv preds/preds_goals_${DATE_MON}.csv
 
-      - name: '*****Predict with projections*************************'
+      - name: Predict ASSISTS (API)
+       # if: steps.when.outputs.in_window == '1'
+        env:
+            SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+            DATE_MON: ${{ steps.when.outputs.predict_date }}
+        run: |
+            python -m white_shorts.cli.predict_flexi_forecast \
+                --model_dir models/v3.3 \
+                --task "Assists" \
+                --date "${DATE_MON}" \
+                --key "${SPORTSDATA_API_KEY}" \
+                --out_csv preds/preds_assists_${DATE_MON}.csv
+
+
+
+      - name: Predict POINTS (API)
+        if: steps.when.outputs.in_window == '1'
+        env:
+            SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
+            DATE_MON: ${{ steps.when.outputs.predict_date }}
+        run: |
+            python -m white_shorts.cli.predict_flexi_forecast \
+            --model_dir models/v3.3 \
+            --task "Points" \
+            --date "${DATE_MON}" \
+            --key "${SPORTSDATA_API_KEY}" \
+            --out_csv preds/preds_points_${DATE_MON}.csv
+
+
+      - name: '*****Predict v1 with projections*************************'
         if: steps.when.outputs.in_window == '1'
         env:
           SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
