@@ -251,4 +251,4 @@ jobs:
                Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
                ${{ job.status == 'success' && 'Predictions file attached.' || 'Check logs for details.}}
         
-               attachments: ${{ job.status == 'success' && format('preds/preds_{0}.csv', steps.when.outputs.predict_date) || '' }}
+               attachments: preds/preds_2025-Oct-13.csv
