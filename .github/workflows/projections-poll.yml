@@ -212,12 +212,12 @@ jobs:
             SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
             DATE_MON: ${{ steps.when.outputs.predict_date }}
         run: |
-            python -m white_shorts.cli.predict_flexi_forecast \
-            --model_dir models/v3.3 \
-            --task "Goals" \
-            --date "${DATE_MON}" \
-            --key "${SPORTSDATA_API_KEY}" \
-            --out_csv preds/preds_goals_${DATE_MON}.csv
+          #  python -m white_shorts.cli.predict_flexi_forecast \
+          #  --model_dir models/v3.3 \
+          #  --task "Goals" \
+          #  --date "${DATE_MON}" \
+          #  --key "${SPORTSDATA_API_KEY}" \
+          #  --out_csv preds/preds_goals_${DATE_MON}.csv
 
       - name: Predict ASSISTS (API)
        # if: steps.when.outputs.in_window == '1'
