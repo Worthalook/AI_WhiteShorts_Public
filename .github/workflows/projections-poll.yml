@@ -220,7 +220,7 @@ jobs:
           git add preds/*.csv || true #data/NHL_YTD.csv NHL_2023_24.csv preds/*.csv models/v3.3/* || true
         
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          #git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+          git commit -m "Projections job: preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
           git push origin goal_assist_and_metrics_upgrade
       
       - name:  '*****Commit updated DB*************************'
