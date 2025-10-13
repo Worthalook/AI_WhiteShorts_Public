@@ -294,18 +294,18 @@ def projections_to_rows(df: pd.DataFrame) -> pd.DataFrame:
     # normalize headers
     df = df.rename(columns={c: c.strip() for c in df.columns})
 
-   #cols = {
-   #     "PlayerID": "player_id",
-   #     "Name": "name",
-   ##     "Team": "team",
-   #     "Opponent": "opponent",
-   #     "HomeOrAway": "home_away",
-   ##     "Position": "position",
-   #     "DateTime": "datetime",
-   #     "Day": "day",
-   # }
-    #keep = [c for c in cols if c in df.columns]
-    out = df.copy()#.rename(columns=cols).copy()
+    cols = {
+        "PlayerID": "player_id",
+        "Name": "name",
+        "Team": "team",
+        "Opponent": "opponent",
+        "HomeOrAway": "home_away",
+        "Position": "position",
+        "DateTime": "datetime",
+        "Day": "day",
+    }
+    keep = [c for c in cols if c in df.columns]
+    out = df.rename(columns=cols).copy()
 
     # hard guarantee: derive name if it slipped through
     if "name" not in out.columns:

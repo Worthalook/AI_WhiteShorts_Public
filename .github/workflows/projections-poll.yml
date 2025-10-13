@@ -73,9 +73,9 @@ jobs:
         run: |
             #init db/store
 
- #     - name: Import YTD outcomes for metrics
-  #      run: |
-          #  python import_results.py           --csv_path data/NHL_YTD.csv           --date_col date           --home_team_col home           --away_team_col dway           --home_score_col home_goals           --away_score_col away_goals           --update_elo
+      - name: Import YTD outcomes for metrics
+        run: |
+           # python import_results.py           --csv_path data/NHL_YTD.csv           --date_col date           --home_team_col home           --away_team_col away           --home_score_col home_goals           --away_score_col away_goals           --update_elo
 
  #     - name: Import predictions (dedup)
  #       run: |
@@ -154,19 +154,23 @@ jobs:
         shell: bash
         run: |
           echo "Projections not ready (or too few). Will check again next run."
-      - name: Debug ONLY
+
+
+
+      - name: '*************************Update (checkin) Results*************************'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "gareth.reid123@gmail.com"
     
-       #   git add data/NHL_YTD.csv data/NHL_2023_24.csv preds/*.csv models/v3.3/* || true
-        #  if git diff --cached --quiet; then
-         #   echo "No changes to commit."
-        #  else
-          #  TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-           # vg
-            #git push origin goal_assist_and_metrics_upgrade
+          git add data/NHL_YTD.csv  || true
+          git commit -m "Projections job: history+preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
+          #  if git diff --cached --quiet; then
+          #   echo "No changes to commit."
+          #  else
+          TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          # vg
+          git push origin goal_assist_and_metrics_upgrade
        #   fi
 
       - name: Train (quick RF refresh)
