@@ -61,7 +61,7 @@ jobs:
           # - After midnight  (00:00–02:59): forecast for *(current Melbourne date - 1 day)*
           #IN_WINDOW=0
           #if [ "$HOUR" -ge 17 ] || [ "$HOUR" -le 2 ]; then
-            IN_WINDOW=1
+          IN_WINDOW=1
           #fi
           echo "in_window=$IN_WINDOW" >> $GITHUB_OUTPUT
 
