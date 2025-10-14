@@ -62,13 +62,13 @@ jobs:
           # Allowed polling window: 19:00–02:59 Melbourne time
           # - Before midnight (19:00–23:59): forecast for *current* Melbourne date
           # - After midnight  (00:00–02:59): forecast for *(current Melbourne date - 1 day)*
-          IN_WINDOW=0
-          if [ "$HOUR" -ge 17 ] || [ "$HOUR" -le 2 ]; then
-            IN_WINDOW=1
-          fi
+          #IN_WINDOW=0
+          #if [ "$HOUR" -ge 17 ] || [ "$HOUR" -le 2 ]; then
+          IN_WINDOW=1
+          #fi
           echo "in_window=$IN_WINDOW" >> $GITHUB_OUTPUT
 
-          if [ "$HOUR" -le 2 ]; then
+          if [ "$HOUR" -le 17 ]; then
             PREDICT_DATE=$(TZ=$TZ date -d "yesterday" +%Y-%b-%d)
           else
             PREDICT_DATE=$(TZ=$TZ date +%Y-%b-%d)
@@ -152,7 +152,7 @@ jobs:
         run: |
           set -euo pipefail
           BASE="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
-          URL="https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate/${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
+          URL="${BASE}/${DATE_MON}?key=${SPORTSDATA_API_KEY}"
           echo "Probing projections: ${URL}"
           HTTP_CODE=$(curl -s -o proj.json -w "%{http_code}" "${URL}")
       
@@ -184,11 +184,11 @@ jobs:
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
-          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 8
+          #python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 8
           #train lighter model to get an idea of goal-assist split
-#python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Assists"
- #         python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"
-  #        python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Points"
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Assists  "
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"
+          python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Points"
           #             --task "Goals"             --task "Points"
       
           
@@ -212,12 +212,12 @@ jobs:
             SPORTSDATA_API_KEY: ${{ secrets.SPORTSDATA_API_KEY }}
             DATE_MON: ${{ steps.when.outputs.predict_date }}
         run: |
-          #  python -m white_shorts.cli.predict_flexi_forecast \
-          #  --model_dir models/v3.3 \
-          #  --task "Goals" \
-          #  --date "${DATE_MON}" \
-          #  --key "${SPORTSDATA_API_KEY}" \
-          #  --out_csv preds/preds_goals_${DATE_MON}.csv
+            python -m white_shorts.cli.predict_flexi_forecast \
+            --model_dir models/v3.3 \
+            --task "Goals" \
+            --date "${DATE_MON}" \
+            --key "${SPORTSDATA_API_KEY}" \
+            --out_csv preds/preds_goals_${DATE_MON}.csv
 
       - name: Predict ASSISTS (API)
        # if: steps.when.outputs.in_window == '1'
