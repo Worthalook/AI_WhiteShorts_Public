@@ -222,7 +222,7 @@ jobs:
         
           TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           git commit -m "Projections job: preds ${TS} (UTC) for ${{ steps.when.outputs.predict_date }}"
-          git push origin main
+          git push origin main 
       
       - name:  '*****Commit updated DB*************************'
         run: |
