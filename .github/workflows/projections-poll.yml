@@ -226,11 +226,11 @@ jobs:
       
       - name:  '*****Commit updated DB*************************'
         run: |
-            #git config user.name "github-actions"
-            #git config user.email "github-actions@users.noreply.github.com"
-            # git add whiteshorts.ùdb || true
-            #git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
-           # git push
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git add whiteshorts.ùdb || true
+            git commit -m "CI: update whiteshorts.db [skip ci]" || echo "Nothing to commit"
+            git push
 
       - name: Send summary email
         if: always()
