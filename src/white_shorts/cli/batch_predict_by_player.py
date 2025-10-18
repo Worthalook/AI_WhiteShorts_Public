@@ -260,7 +260,8 @@ def rf_predict_quantiles(model, X, q_low=0.1, q_high=0.9):
     mean_pred = all_tree_preds.mean(axis=0)
     lo = np.quantile(all_tree_preds, q_low, axis=0)
     hi = np.quantile(all_tree_preds, q_high, axis=0)
-    return mean_pred, lo, hi
+    return float(mean_pred), float(lo), float(high)
+                
 
 def dss_predict_quantiles(model, X_seq, mc=200, q_low=0.1, q_high=0.9, device="cpu"):
     X_t = torch.from_numpy(X_seq[None,...]).to(device)
@@ -282,10 +283,9 @@ def normalize_date_input(date_str: str) -> tuple[str,str]:
             return dt.strftime("%Y-%m-%d"), dt.strftime("%Y-%b-%d")
         except ValueError:
             continue
-    raise SystemExit("Could not parse --date. Try 2025-05-07 or 2025-May-07.")
-
+    raise SystemExit("Could not parse --date. Try 2025-05-07 or 2025-May-07.")b
 def fetch_projections(date_mon: str, api_key: str) -> pd.DataFrame:
-    if requests is None:
+    if requests is None:raise 
         raise SystemExit("The 'requests' package is unavailable; install it locally to call the API.")
     base = "https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
     url = f"{base}/{date_mon}?key={api_key}"
