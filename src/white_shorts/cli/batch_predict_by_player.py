@@ -259,7 +259,7 @@ def rf_predict_quantiles(model, X, q_low=0.1, q_high=0.9):
     all_tree_preds = np.stack([est.predict(X) for est in model.estimators_], axis=0)
     mean_pred = all_tree_preds.mean(axis=0)
     lo = np.quantile(all_tree_preds, q_low, axis=0)
-    hi = np.quantile(all_tree_preds, q_high, axis=0)
+    high = np.quantile(all_tree_preds, q_high, axis=0)
     return float(mean_pred), float(lo), float(high)
                 
 
