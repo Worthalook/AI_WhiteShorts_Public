@@ -176,11 +176,11 @@ jobs:
      
 
       - name: '*****Train (quick RF refresh)*************************'
-       # if: steps.when.outputs.in_window == '1'
+        if: steps.when.outputs.in_window == '1'
         run: |
           # If you prefer training from YTD+Last separately, swap to --csv_ytd/--csv_last
           # changed to use both files WAS: --csv data/NHL_HISTORY_UNION.csv
-          python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 8
+          #python train_compare_season.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 8
           #train lighter model to get an idea of goal-assist split
 #python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Assists"
  #         python train_flexi_forecast.py             --csv_ytd data/NHL_YTD.csv             --csv_last data/NHL_2023_24.csv             --out_dir models/v3.3             --split time_per_player             --epochs 2             --task "Goals"

@@ -438,9 +438,7 @@ def main():
         chosen = winner_map.get(name, "DSS")
         if chosen == "RF":
             mean_pred, lo, hi = rf_predict_quantiles(rf, x_next.reshape(1,-1), args.q_low, args.q_high)
-            mean_pred = float(mean_pred[0])
-            lo = float(lo[0])
-            hi = float(hi[0])
+            #mean_pred, lo, hi = mean_pred[0], float(lo[0], hi[0]
             model_used = "RF"
         else:
             X_hist = g[feat_cols].values.astype(np.float32)
