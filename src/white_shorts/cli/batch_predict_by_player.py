@@ -285,7 +285,7 @@ def normalize_date_input(date_str: str) -> tuple[str,str]:
             continue
     raise SystemExit("Could not parse --date. Try 2025-05-07 or 2025-May-07.")
 def fetch_projections(date_mon: str, api_key: str) -> pd.DataFrame:
-    if requests is None:raise 
+    if requests is None:
         raise SystemExit("The 'requests' package is unavailable; install it locally to call the API.")
     base = "https://api.sportsdata.io/api/nhl/fantasy/json/PlayerGameProjectionStatsByDate"
     url = f"{base}/{date_mon}?key={api_key}"
