@@ -5,7 +5,7 @@ on:
 
   # schedule:
     #### Every 30 minutes
- #   - cron: "*/30 * * * *"
+ #   - cron: "*/30 * * * *" turn on
    
   workflow_dispatch: {}
 
